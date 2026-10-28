@@ -1,0 +1,289 @@
+/**
+ * NOVELSTUDIO - DESIGN SYSTEM THEME TOKENS
+ * Quản lý biến CSS cho chế độ Sáng/Tối (Light/Dark Mode)
+ * Đảm bảo độ tương phản chuẩn mực, cảm giác sáng tác văn học và ghi đè đồng bộ Bootstrap 5.3 + SweetAlert2
+ */
+
+:root,
+[data-bs-theme="light"] {
+  /* Bảng màu chính - Light Mode (Nền giấy ngà dịu mắt, ấm áp) */
+  --bg-body: #fbfaf7;
+  --bg-surface: #ffffff;
+  --bg-elevated: #f4f2ec;
+  --bg-elevated-hover: #ebe8e0;
+  --text-primary: #1c1917;
+  --text-secondary: #57534e;
+  --text-muted: #78716c;
+  --border-color: #e5e2db;
+  --border-focus: #4f46e5;
+
+  /* Không gian đọc sách (Reader Paper) */
+  --reader-paper-bg: #fffdfa;
+  --reader-paper-border: #e7e2d7;
+  --reader-text: #26221f;
+  --reader-quote-bg: #f8f6f0;
+
+  /* Màu thương hiệu & Nhấn mạnh (Sắc Tím Chàm Văn Học) */
+  --accent-color: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-subtle: rgba(79, 70, 229, 0.08);
+  --accent-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --accent-glow: rgba(79, 70, 229, 0.22);
+
+  /* Trạng thái nghiệp vụ */
+  --color-success: #059669;
+  --color-success-subtle: rgba(5, 150, 105, 0.12);
+  --color-warning: #d97706;
+  --color-warning-subtle: rgba(217, 119, 6, 0.12);
+  --color-danger: #dc2626;
+  --color-danger-subtle: rgba(220, 38, 38, 0.12);
+  --color-info: #0284c7;
+  --color-info-subtle: rgba(2, 132, 199, 0.12);
+
+  /* Bóng đổ */
+  --shadow-sm: 0 1px 3px rgba(28, 25, 23, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(28, 25, 23, 0.07), 0 2px 4px -2px rgba(28, 25, 23, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(28, 25, 23, 0.08), 0 4px 6px -4px rgba(28, 25, 23, 0.04);
+  --shadow-glow: 0 0 18px rgba(79, 70, 229, 0.22);
+
+  /* Nút đóng modal */
+  --close-btn-filter: none;
+
+  /* Màu lưới Chart.js */
+  --chart-grid-color: rgba(120, 113, 108, 0.18);
+  --chart-text-color: #57534e;
+}
+
+[data-bs-theme="dark"] {
+  /* Bảng màu chính - Dark Mode (Xanh phiến thạch đêm sâu, êm dịu, không lóa) */
+  --bg-body: #0b0f19;
+  --bg-surface: #151d2a;
+  --bg-elevated: #1e293b;
+  --bg-elevated-hover: #283548;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border-color: #26354a;
+  --border-focus: #818cf8;
+
+  /* Không gian đọc sách Dark (Nền giấy đêm mực mun cổ điển) */
+  --reader-paper-bg: #121926;
+  --reader-paper-border: #233146;
+  --reader-text: #e2e8f0;
+  --reader-quote-bg: #182234;
+
+  /* Màu thương hiệu & Nhấn mạnh */
+  --accent-color: #818cf8;
+  --accent-hover: #a5b4fc;
+  --accent-subtle: rgba(129, 140, 248, 0.16);
+  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  --accent-glow: rgba(129, 140, 248, 0.3);
+
+  /* Trạng thái nghiệp vụ Dark */
+  --color-success: #34d399;
+  --color-success-subtle: rgba(52, 211, 153, 0.2);
+  --color-warning: #fbbf24;
+  --color-warning-subtle: rgba(251, 191, 36, 0.2);
+  --color-danger: #f87171;
+  --color-danger-subtle: rgba(248, 113, 113, 0.2);
+  --color-info: #38bdf8;
+  --color-info-subtle: rgba(56, 189, 248, 0.2);
+
+  /* Bóng đổ Dark */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.55), 0 2px 4px -2px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.65), 0 4px 6px -4px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 0 22px rgba(129, 140, 248, 0.35);
+
+  /* Nút đóng modal trắng sáng */
+  --close-btn-filter: invert(1) grayscale(100%) brightness(200%);
+
+  /* Màu lưới Chart.js Dark */
+  --chart-grid-color: rgba(51, 65, 85, 0.6);
+  --chart-text-color: #94a3b8;
+}
+
+/* ============================================================
+   ÁP DỤNG MÀU NỀN & CHỮ TOÀN BỘ PHẦN TỬ
+   ============================================================ */
+body {
+  background-color: var(--bg-body);
+  color: var(--text-primary);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Card & Bề mặt (Surfaces) */
+.card,
+.novel-surface,
+.modal-content,
+.dropdown-menu {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Dropdown Menu & Items */
+.dropdown-menu {
+  --bs-dropdown-bg: var(--bg-surface);
+  --bs-dropdown-color: var(--text-primary);
+  --bs-dropdown-border-color: var(--border-color);
+  --bs-dropdown-link-color: var(--text-primary);
+  --bs-dropdown-link-hover-bg: var(--accent-subtle);
+  --bs-dropdown-link-hover-color: var(--accent-color);
+  --bs-dropdown-divider-bg: var(--border-color);
+  box-shadow: var(--shadow-lg) !important;
+  border-radius: 0.85rem !important;
+  padding: 0.5rem !important;
+}
+
+.dropdown-item {
+  color: var(--text-primary) !important;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background-color: var(--accent-subtle) !important;
+  color: var(--accent-color) !important;
+}
+
+.dropdown-item.text-danger:hover {
+  background-color: var(--color-danger-subtle) !important;
+  color: var(--color-danger) !important;
+}
+
+/* Form Controls & Inputs */
+.form-control,
+.form-select,
+.input-group-text {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, background-color 0.25s ease;
+}
+
+.form-control::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.85;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 0.25rem var(--accent-subtle) !important;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  background-color: var(--bg-elevated) !important;
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Bảng dữ liệu */
+.table {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text-primary);
+  --bs-table-border-color: var(--border-color);
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.table > :not(caption) > * > * {
+  background-color: transparent !important;
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border-color) !important;
+}
+
+.table-hover > tbody > tr:hover > * {
+  background-color: var(--accent-subtle) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Nút Close của Modal */
+.btn-close {
+  filter: var(--close-btn-filter);
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+}
+
+.btn-close:hover {
+  opacity: 1;
+}
+
+/* ============================================================
+   ĐỒNG BỘ SWEETALERT2 VỚI THEME TỰ ĐỘNG
+   ============================================================ */
+.swal2-popup {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 1.25rem !important;
+  box-shadow: var(--shadow-lg) !important;
+  padding: 1.75rem !important;
+}
+
+.swal2-title {
+  color: var(--text-primary) !important;
+  font-weight: 700 !important;
+  font-size: 1.35rem !important;
+}
+
+.swal2-html-container {
+  color: var(--text-secondary) !important;
+  font-size: 0.95rem !important;
+  line-height: 1.6 !important;
+}
+
+.swal2-close {
+  color: var(--text-secondary) !important;
+}
+
+.swal2-close:hover {
+  color: var(--text-primary) !important;
+}
+
+.swal2-input,
+.swal2-textarea {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0.65rem !important;
+  font-size: 0.95rem !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.swal2-input:focus,
+.swal2-textarea:focus {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 0.25rem var(--accent-subtle) !important;
+}
+
+.swal2-actions {
+  gap: 0.5rem;
+}
+
+/* Scrollbar tinh tế */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-elevated);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
