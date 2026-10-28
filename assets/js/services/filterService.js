@@ -1,15 +1,15 @@
 /**
- * NOVELSTUDIO - FILTER SERVICE (filterService.js)
- * Động cơ Lọc đa chiều & Sắp xếp tác phẩm
+ * NOVELSTUDIO - FILTER & SEARCH SERVICE (filterService.js)
+ * Cung cấp bộ máy truy vấn, lọc đa chiều và sắp xếp dữ liệu tiểu thuyết.
  */
 
 /**
- * Áp dụng các tiêu chí lọc và sắp xếp cho danh sách tác phẩm
- * @param {Array} novels - Danh sách tác phẩm gốc
+ * Áp dụng kết hợp các tiêu chí lọc và sắp xếp lên danh sách tác phẩm
+ * @param {Array} novels - Mảng danh sách tác phẩm gốc
  * @param {object} criteria - { keyword, status, priority, sortBy }
- * @returns {Array} Danh sách tác phẩm sau khi lọc và sắp xếp
+ * @returns {Array} Mảng kết quả sau khi lọc và sắp xếp (không làm thay đổi mảng gốc)
  */
-export function applyFilters(novels, criteria = {}) {
+export function applyFilters(novels = [], criteria = {}) {
   if (!Array.isArray(novels)) return [];
 
   const {
@@ -19,53 +19,59 @@ export function applyFilters(novels, criteria = {}) {
     sortBy = 'created-desc'
   } = criteria;
 
+  // 1. Sao chép mảng nông để không làm biến đổi dữ liệu nguồn
   let result = [...novels];
 
-  // 1. Lọc theo từ khóa (Tiêu đề hoặc Mô tả)
-  if (keyword && keyword.trim()) {
-    const kw = keyword.toLowerCase().trim();
+  // 2. Lọc theo từ khóa (Keyword match in Title or Description)
+  const cleanKeyword = (keyword || '').trim().toLowerCase();
+  if (cleanKeyword.length > 0) {
     result = result.filter((novel) => {
-      const titleMatch = (novel.title || '').toLowerCase().includes(kw);
-      const descMatch = (novel.description || '').toLowerCase().includes(kw);
+      const titleMatch = (novel.title || '').toLowerCase().includes(cleanKeyword);
+      const descMatch = (novel.description || '').toLowerCase().includes(cleanKeyword);
       return titleMatch || descMatch;
     });
   }
 
-  // 2. Lọc theo Trạng thái (All / Pending / Done)
+  // 3. Lọc theo Trạng thái (Status filter)
   if (status && status !== 'All') {
     result = result.filter((novel) => novel.status === status);
   }
 
-  // 3. Lọc theo Mức độ ưu tiên (All / Low / Medium / High)
+  // 4. Lọc theo Mức độ ưu tiên (Priority filter)
   if (priority && priority !== 'All') {
     result = result.filter((novel) => novel.priority === priority);
   }
 
-  // 4. Sắp xếp
+  // 5. Sắp xếp (Sorting Engine)
   result.sort((a, b) => {
     switch (sortBy) {
       case 'deadline-asc': {
-        const dateA = a.deadline ? new Date(a.deadline).getTime() : Infinity;
-        const dateB = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+        // Hạn chót gần nhất trước
+        const dateA = new Date(a.deadline).getTime() || 0;
+        const dateB = new Date(b.deadline).getTime() || 0;
         return dateA - dateB;
       }
       case 'deadline-desc': {
-        const dateA = a.deadline ? new Date(a.deadline).getTime() : -Infinity;
-        const dateB = b.deadline ? new Date(b.deadline).getTime() : -Infinity;
+        // Hạn chót xa nhất trước
+        const dateA = new Date(a.deadline).getTime() || 0;
+        const dateB = new Date(b.deadline).getTime() || 0;
         return dateB - dateA;
       }
       case 'title-asc': {
-        return (a.title || '').localeCompare(b.title || '', 'vi', { sensitivity: 'base' });
+        // Thứ tự bảng chữ cái A-Z
+        const titleA = (a.title || '').toLowerCase();
+        const titleB = (b.title || '').toLowerCase();
+        return titleA.localeCompare(titleB, 'vi');
       }
       case 'created-desc':
       default: {
-        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-        return timeB - timeA;
+        // Mới tạo nhất lên đầu
+        const createdA = new Date(a.createdAt).getTime() || 0;
+        const createdB = new Date(b.createdAt).getTime() || 0;
+        return createdB - createdA;
       }
     }
   });
 
   return result;
 }
-

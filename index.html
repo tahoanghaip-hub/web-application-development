@@ -1,27 +1,26 @@
 <!DOCTYPE html>
 <html lang="vi" data-bs-theme="light">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NOVELSTUDIO — Khám Phá & Đọc Thử Tiểu Thuyết Sáng Tác</title>
-  <meta name="description" content="Nền tảng quản lý sáng tác và không gian thưởng thức tác phẩm văn học độc lập của tác giả.">
+  <meta name="description"
+    content="Nền tảng quản lý sáng tác và không gian thưởng thức tác phẩm văn học độc lập của tác giả.">
 
   <!-- Favicon -->
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%220%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-
-  <!-- Google Fonts: Plus Jakarta Sans & Lora -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%220%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
 
   <!-- Bootstrap 5.3.3 CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <!-- FontAwesome 6.5.1 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Custom Design System CSS -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="assets/css/themes.css">
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
+
 <body>
 
   <!-- ==========================================
@@ -29,12 +28,13 @@
        ========================================== -->
   <nav class="navbar navbar-expand-lg novel-navbar">
     <div class="container">
-      <a class="navbar-brand brand-logo" href="index.html" aria-label="Trang chủ NovelStudio">
+      <a class="navbar-brand brand-logo" href="index.html">
         <span class="brand-icon"><i class="fa-solid fa-feather-pointed"></i></span>
         <span>NOVEL<span style="color: var(--accent-color)">STUDIO</span></span>
       </a>
 
-      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Điều hướng menu">
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent"
+        aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
         <i class="fa-solid fa-bars text-secondary fs-4"></i>
       </button>
 
@@ -50,18 +50,24 @@
               <i class="fa-solid fa-table-columns"></i> Trạm Sáng Tác
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="statistics.html">
+              <i class="fa-solid fa-chart-pie"></i> Thống Kê
+            </a>
+          </li>
         </ul>
 
         <!-- Right Tools: Theme Toggle & User Session -->
         <div class="d-flex align-items-center gap-2 mt-3 mt-lg-0">
           <!-- Theme Toggle Button -->
-          <button id="theme-toggle-btn" class="theme-btn" type="button" aria-label="Đổi giao diện Sáng/Tối" title="Đổi giao diện Sáng/Tối">
+          <button id="theme-toggle-btn" class="theme-btn" type="button" aria-label="Đổi giao diện Sáng/Tối">
             <i class="fa-solid fa-moon text-primary"></i>
           </button>
 
           <!-- User Badge / Login Trigger -->
           <div class="dropdown">
-            <div id="user-status-badge" class="user-badge-wrapper cursor-pointer" data-bs-toggle="dropdown" aria-expanded="false" role="button" tabindex="0">
+            <div id="user-status-badge" class="user-badge-wrapper cursor-pointer" data-bs-toggle="dropdown"
+              aria-expanded="false" role="button">
               <span class="user-status-dot"></span>
               <span class="d-none d-sm-inline">Tác giả</span>
             </div>
@@ -71,7 +77,9 @@
                   <i class="fa-solid fa-user-pen me-2 text-primary"></i> Đổi tác giả (Đăng nhập)
                 </button>
               </li>
-              <li><hr class="dropdown-divider"></li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
               <li>
                 <button id="logout-btn" class="dropdown-item text-danger" type="button">
                   <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng xuất
@@ -87,25 +95,30 @@
   <!-- ==========================================
        HERO BANNER
        ========================================== -->
-  <header class="py-5 text-center position-relative overflow-hidden" style="background: radial-gradient(circle at 50% 20%, var(--accent-subtle) 0%, transparent 70%);">
-    <div class="container py-3">
+  <header class="py-5 text-center position-relative overflow-hidden"
+    style="background: radial-gradient(circle at 50% 20%, var(--accent-subtle) 0%, transparent 70%);">
+    <div class="container py-4">
       <div class="row justify-content-center">
         <div class="col-lg-8">
           <span class="badge badge-novel badge-priority-low mb-3">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> Không Gian Văn Học & Đọc Thử Bản Thảo
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Creative Task Management Platform
           </span>
           <h1 class="display-5 fw-extrabold mb-3">
-            Nơi Mỗi Ý Tưởng Trở Thành <span style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Kiệt Tác</span>
+            Nơi Mỗi Ý Tưởng Trở Thành <span
+              style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Kiệt
+              Tác</span>
           </h1>
-          <p class="lead text-secondary mb-4" style="font-size: 1.05rem;">
-            Thưởng thức các tác phẩm văn học độc lập, theo dõi từng chương truyện mới và khám phá các phiên bản bản thảo được bảo chứng bởi hệ thống NovelStudio.
+          <p class="lead text-secondary mb-4">
+            Theo dõi tiến độ sáng tác, quản lý chương hồi và lưu giữ từng phiên bản bản thảo với hệ thống kiểm soát
+            phiên bản độc quyền của NovelStudio.
           </p>
 
           <!-- Quick Search Bar -->
           <div class="search-box mx-auto" style="max-width: 540px;">
             <div class="input-group search-input-group shadow-sm">
               <span class="input-group-text"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
-              <input type="text" id="home-search-input" class="form-control py-3" placeholder="Tìm kiếm theo tên tiểu thuyết hoặc tóm tắt cốt truyện..." aria-label="Tìm kiếm truyện">
+              <input type="text" id="home-search-input" class="form-control py-3"
+                placeholder="Tìm kiếm nhanh tên truyện hoặc tóm tắt cốt truyện..." aria-label="Tìm kiếm truyện">
             </div>
           </div>
         </div>
@@ -116,43 +129,24 @@
   <!-- ==========================================
        MAIN CONTENT: PUBLISHED NOVELS GRID
        ========================================== -->
-  <main class="py-4">
+  <main class="py-5">
     <div class="container">
-      
-      <!-- Filter Toolbar & Category Chips -->
-      <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+      <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
         <div>
-          <div class="d-flex align-items-center gap-2">
-            <h2 class="h3 fw-bold mb-0">Tác Phẩm Khám Phá</h2>
-            <span id="published-count-badge" class="badge bg-primary-subtle text-primary rounded-pill">0 tác phẩm</span>
-          </div>
-          <p class="text-secondary small mb-0 mt-1">Các tác phẩm đủ điều kiện đọc thử theo chuẩn xuất bản (Đã hoàn thành hoặc có chương phát hành)</p>
+          <h2 class="h3 fw-bold mb-1">Tác Phẩm Nổi Bật & Hoàn Thành</h2>
+          <p class="text-secondary small mb-0">Các bộ tiểu thuyết đã xuất bản hoặc hoàn tất mục tiêu sáng tác</p>
         </div>
-
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-          <!-- Filter Chips -->
-          <button type="button" class="filter-chip active" data-filter="all">
-            <i class="fa-solid fa-border-all"></i> Tất cả
-          </button>
-          <button type="button" class="filter-chip" data-filter="done">
-            <i class="fa-solid fa-circle-check"></i> Đã hoàn thành
-          </button>
-          <button type="button" class="filter-chip" data-filter="pending">
-            <i class="fa-solid fa-hourglass-start"></i> Đang ra chương
-          </button>
-          
-          <a href="dashboard.html" class="btn btn-primary-novel btn-sm ms-lg-2">
-            <i class="fa-solid fa-pen-nib me-1"></i> Trạm Sáng Tác
-          </a>
-        </div>
+        <a href="dashboard.html" class="btn btn-primary-novel btn-sm">
+          <i class="fa-solid fa-pen-nib"></i> Đến Trạm Sáng Tác
+        </a>
       </div>
 
-      <!-- Novels Grid Container -->
+      <!-- Novels Grid -->
       <div id="published-novels-grid" class="row g-4">
         <!-- Render động qua indexController.js -->
         <div class="col-12 text-center py-5">
           <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Đang nạp dữ liệu tác phẩm...</span>
+            <span class="visually-hidden">Đang tải tác phẩm...</span>
           </div>
         </div>
       </div>
@@ -162,65 +156,43 @@
   <!-- ==========================================
        READER MODAL (ĐỌC THỬ TÁC PHẨM)
        ========================================== -->
-  <div class="modal fade" id="reader-modal" tabindex="-1" aria-labelledby="readerModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
-    <div class="modal-dialog modal-dialog-scrollable reader-modal-dialog modal-dialog-centered">
+  <div class="modal fade" id="reader-modal" tabindex="-1" aria-labelledby="readerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="pe-3">
+          <div>
             <h5 class="modal-title fw-bold" id="readerModalLabel">
               <i class="fa-solid fa-book-open text-primary me-2"></i>
-              <span id="reader-novel-title" class="novel-title-serif">Tên Tác Phẩm</span>
+              <span id="reader-novel-title">Tên Tác Phẩm</span>
             </h5>
             <small class="text-secondary" id="reader-novel-meta">Tác giả • Trạng thái</small>
           </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng hộp thoại"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
         </div>
 
         <div class="modal-body p-4">
-          <!-- Tóm tắt cốt truyện của tác phẩm (Synopsis) -->
-          <div class="reader-synopsis mb-3" id="reader-synopsis-box">
-            <div class="small fw-bold text-secondary mb-1">
-              <i class="fa-solid fa-quote-left text-primary me-1"></i> Tóm Tắt Cốt Truyện:
-            </div>
-            <div id="reader-novel-desc" class="text-secondary small"></div>
+          <!-- Chapter Selector -->
+          <div class="mb-4">
+            <label for="reader-chapter-select" class="form-label fw-semibold small text-secondary">CHỌN CHƯƠNG ĐỌC
+              THỬ:</label>
+            <select id="reader-chapter-select" class="form-select">
+              <!-- Render động -->
+            </select>
           </div>
 
-          <!-- Thanh điều hướng chương & Cỡ chữ (Reader Controls Bar) -->
-          <div class="reader-controls-bar">
-            <div class="d-flex align-items-center gap-2 flex-grow-1 flex-wrap">
-              <label for="reader-chapter-select" class="form-label fw-bold small text-secondary mb-0 text-nowrap">CHƯƠNG:</label>
-              <select id="reader-chapter-select" class="form-select form-select-sm" style="max-width: 290px;">
-                <!-- Render động -->
-              </select>
-              <button id="reader-prev-chapter-btn" class="reader-nav-btn" type="button" title="Đọc chương trước">
-                <i class="fa-solid fa-chevron-left me-1"></i> Trước
-              </button>
-              <button id="reader-next-chapter-btn" class="reader-nav-btn" type="button" title="Đọc chương sau">
-                Sau <i class="fa-solid fa-chevron-right ms-1"></i>
-              </button>
-            </div>
-
-            <!-- Nút chỉnh cỡ chữ -->
-            <div class="d-flex align-items-center gap-1">
-              <span class="text-secondary small me-1 d-none d-sm-inline">Cỡ chữ:</span>
-              <button id="reader-font-decrease-btn" class="btn btn-outline-novel btn-sm py-0 px-2" type="button" title="Thu nhỏ chữ">A-</button>
-              <button id="reader-font-increase-btn" class="btn btn-outline-novel btn-sm py-0 px-2" type="button" title="Phóng to chữ">A+</button>
-            </div>
-          </div>
-
-          <!-- Trang Giấy Đọc Thử Văn Học (Reader Paper) -->
-          <div class="reader-paper" id="reader-paper-container">
-            <h4 id="reader-chapter-title-heading" class="reader-chapter-heading d-none"></h4>
-            <div id="reader-content-body" class="reader-content-text">
+          <!-- Reader Content Paper -->
+          <div class="reader-paper p-4 rounded-3"
+            style="background-color: var(--bg-elevated); border: 1px solid var(--border-color); min-height: 250px;">
+            <div id="reader-content-body" style="font-size: 1.05rem; line-height: 1.8; white-space: pre-wrap;">
               <!-- Nội dung bản thảo hiển thị ở đây -->
             </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <div class="text-secondary small me-auto" id="reader-version-info">
+          <span class="text-secondary small me-auto" id="reader-version-info">
             <i class="fa-solid fa-code-commit text-primary me-1"></i> Bản nháp mới nhất
-          </div>
+          </span>
           <button type="button" class="btn btn-outline-novel" data-bs-dismiss="modal">Đóng</button>
         </div>
       </div>
@@ -230,23 +202,22 @@
   <!-- ==========================================
        LOGIN / SWITCH USER MODAL
        ========================================== -->
-  <div class="modal fade" id="login-modal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true" data-bs-backdrop="true" data-bs-keyboard="true">
+  <div class="modal fade" id="login-modal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title fw-bold" id="loginModalLabel">
             <i class="fa-solid fa-id-card text-primary me-2"></i> Hồ Sơ Tác Giả Sáng Tác
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="login-form">
           <div class="modal-body p-4">
-            <p class="text-secondary small mb-3">
-              Mô phỏng phiên làm việc của tác giả trong trình duyệt. Thông tin bút danh sẽ được hiển thị khi bạn sáng tác và lưu các phiên bản bản thảo.
-            </p>
             <div class="mb-3">
-              <label for="login-username" class="form-label fw-semibold">Bút Danh / Tên Tác Giả <span class="text-danger">*</span></label>
-              <input type="text" id="login-username" class="form-control" placeholder="Ví dụ: Nam Cao, Tô Hoài, Xuân Quỳnh..." required>
+              <label for="login-username" class="form-label fw-semibold">Bút Danh / Tên Tác Giả <span
+                  class="text-danger">*</span></label>
+              <input type="text" id="login-username" class="form-control" placeholder="Ví dụ: Nam Cao, Tô Hoài..."
+                required>
             </div>
             <div class="mb-3">
               <label for="login-role" class="form-label fw-semibold">Vai Trò Sáng Tác</label>
@@ -275,7 +246,8 @@
       <div class="row align-items-center gy-3">
         <div class="col-md-6 text-center text-md-start">
           <div class="fw-bold fs-6 mb-1">NOVELSTUDIO — CREATIVE TASK PLATFORM</div>
-          <small class="text-secondary">Đồ án Phát triển Ứng dụng Web • 100% Client-Side LocalStorage Architecture</small>
+          <small class="text-secondary">Đồ án Phát triển Ứng dụng Web • 100% Client-Side LocalStorage
+            Architecture</small>
         </div>
         <div class="col-md-6 text-center text-md-end">
           <span class="badge bg-success-subtle text-success me-2">Bootstrap 5.3 Native Dark Mode</span>
@@ -293,4 +265,5 @@
   <script type="module" src="assets/js/app.js"></script>
   <script type="module" src="assets/js/controllers/indexController.js"></script>
 </body>
+
 </html>
