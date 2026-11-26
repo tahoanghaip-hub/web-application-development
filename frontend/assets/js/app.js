@@ -68,6 +68,8 @@ export function toggleTheme() {
 
 let account = null;
 let previousId = null;
+let loginForCreation = false;
+const createDestination = 'dashboard.html#create-novel';
 
 function showAccount(user) {
   account = user;
@@ -96,6 +98,24 @@ export const sessionReady = api('/auth/me').catch(error => {
   return user;
 });
 
+on($('create-novel-btn'), 'click', async event => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  try {
+    await sessionReady;
+    await api('/auth/me');
+    location.assign(createDestination);
+  } catch (error) {
+    if (error.status !== 401) throw error;
+    loginForCreation = true;
+    $('auth-message').textContent = '';
+    bootstrap.Modal.getOrCreateInstance($('login-modal')).show(button);
+  } finally {
+    button.disabled = false;
+  }
+});
+on($('login-modal'), 'hide.bs.modal', () => { loginForCreation = false; });
+
 on($('login-form'), 'submit', async event => {
   event.preventDefault();
   const register = event.submitter?.value === 'register';
@@ -105,6 +125,9 @@ on($('login-form'), 'submit', async event => {
     });
     if (register) {
       $('auth-message').textContent = 'Đã tạo tài khoản. Bấm Đăng nhập để tiếp tục.';
+    } else if (loginForCreation) {
+      loginForCreation = false;
+      location.assign(createDestination);
     } else if (user.id === previousId) {
       showAccount(user);
       $('login-password').value = '';

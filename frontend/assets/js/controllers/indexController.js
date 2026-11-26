@@ -43,10 +43,7 @@ function renderNovelsGrid(novels) {
         <div class="empty-state p-5 rounded-4" style="background-color: var(--bg-surface); border: 1px dashed var(--border-color);">
           <div class="empty-state-icon"><i class="fa-solid fa-feather"></i></div>
           <h4 class="fw-bold mb-2">Chưa có tác phẩm nào phù hợp</h4>
-          <p class="text-secondary mb-4">Hãy thử tìm kiếm với từ khóa khác hoặc chuyển sang Trạm Sáng Tác để tạo tác phẩm đầu tiên.</p>
-          <a href="dashboard.html" class="btn btn-primary-novel btn-sm">
-            <i class="fa-solid fa-plus me-1"></i> Tạo Tác Phẩm Mới
-          </a>
+          <p class="text-secondary mb-0">Tác phẩm có chương đã xuất bản sẽ xuất hiện ở đây nếu khớp với từ khóa tìm kiếm.</p>
         </div>
       </div>
     `;

@@ -67,6 +67,7 @@ def run():
     data = {"title": alice["username"], "description": "Dữ liệu minh họa cho kiểm thử.",
             "deadline": str((datetime.now(UTC) + timedelta(days=10)).date()),
             "priority": "High", "status": "Pending", "owner_id": bob["id"]}
+    guest.studio("/novels", "POST", data, 401)
     nid = a.studio("/novels", "POST", data, 201)["id"]
     path = "/novels/" + nid
     cid = a.studio(path + "/chapters", "POST", {"chapterTitle": "Khởi đầu"}, 201)["chapterId"]
@@ -88,7 +89,12 @@ def run():
     a.studio(vp + "/publish", "PUT")
     a.studio(chapter + "/versions", "POST", {"content": "Bản nháp mới"}, 201)
     a.studio(path, "PUT", data | {"description": "Mô tả chưa xuất bản"})
+    hidden_chapter = a.studio(path + "/chapters", "POST", {"chapterTitle": "Chương riêng"}, 201)
     public = next(x for x in guest.studio("/public") if x["id"] == nid)
+    for reader in (a, b):
+        assert next(x for x in reader.studio("/public") if x["id"] == nid) == public
+    assert [c["chapterId"] for c in public["chapters"]] == [cid]
+    a.studio(path + "/chapters/" + hidden_chapter["chapterId"], "DELETE")
     assert public["description"] == data["description"]
     visible = public["chapters"][0]["versions"]
     assert len(visible) == 1 and visible[0]["content"] == "Công khai" and "commitMessage" not in visible[0]
@@ -100,6 +106,8 @@ def run():
     assert a.studio("/novels?status=Done&priority=High&keyword=test-&size=1")["total"] == 1
     assert a.studio("/novels?size=1&page=2")["items"] == []
     extra = a.studio("/novels", "POST", data | {"title": "ZZZ test", "priority": "Low"}, 201)
+    for reader in (guest, a, b):
+        assert all(x["id"] != extra["id"] for x in reader.studio("/public"))
     first = a.studio("/novels?size=1&sortBy=created-desc&page=1")
     second = a.studio("/novels?size=1&sortBy=created-desc&page=2")
     assert first["total"] == second["total"] == 2

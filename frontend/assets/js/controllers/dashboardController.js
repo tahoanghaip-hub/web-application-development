@@ -574,6 +574,10 @@ async function init() {
   });
   on($('prev-page'), 'click', () => { page--; return loadTable(); });
   on($('next-page'), 'click', () => { page++; return loadTable(); });
+  if (location.hash === '#create-novel') {
+    history.replaceState(history.state, '', location.pathname + location.search);
+    openAddModal();
+  }
   await loadTable();
 }
 init().catch(error => {
