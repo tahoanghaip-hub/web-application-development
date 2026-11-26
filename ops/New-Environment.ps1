@@ -1,6 +1,12 @@
 # Run from any directory. CreateNew protects an existing environment file.
 $ErrorActionPreference = 'Stop'
 $root = Split-Path $PSScriptRoot
+$envFile = Join-Path $root '.env'
+if ([IO.File]::Exists($envFile)) {
+    Write-Output 'Using existing .env.'
+    return
+}
+
 $template = [IO.File]::ReadAllText((Join-Path $root '.env.example'))
 $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
 try {
@@ -10,7 +16,13 @@ try {
         $secret = [BitConverter]::ToString($bytes).Replace('-', '').ToLowerInvariant()
         $template = $template -replace "(?m)^${key}=(?=\r?$)", "$key=$secret"
     }
-    $stream = [IO.File]::Open((Join-Path $root '.env'), [IO.FileMode]::CreateNew)
+    try {
+        $stream = [IO.File]::Open($envFile, [IO.FileMode]::CreateNew)
+    } catch [IO.IOException] {
+        if (![IO.File]::Exists($envFile)) { throw }
+        Write-Output 'Using existing .env.'
+        return
+    }
     try {
         $encoded = [Text.Encoding]::UTF8.GetBytes($template)
         $stream.Write($encoded, 0, $encoded.Length)

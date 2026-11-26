@@ -6,6 +6,8 @@ NovelStudio là không gian viết tiểu thuyết cá nhân trên Windows. Tác
 
 Cài Docker Desktop cho Windows, bật Linux containers và khởi động Docker Engine. Lần build đầu cần Internet để tải image, gói Python và thư viện giao diện. Các trang, phông chữ, biểu đồ và API sau khi build đều được phục vụ cùng origin.
 
+Nếu PowerShell báo không tìm thấy `docker`, kiểm tra Docker Desktop đã được cài, sau đó mở một PowerShell mới. Nếu chọn WSL 2 và Windows báo thiếu WSL, mở PowerShell với quyền quản trị và chạy `wsl --install --no-distribution`. Khởi động lại nếu Windows yêu cầu, rồi cài và mở Docker Desktop. Đợi `docker version` hiển thị cả Client và Server trước khi chạy Compose. [Cài Docker Desktop trên Windows](https://docs.docker.com/desktop/setup/install/windows-install/) · [Lệnh WSL](https://learn.microsoft.com/windows/wsl/reference)
+
 Mở PowerShell ở thư mục có `compose.yaml` và chạy các lệnh sau.
 
 ```powershell
@@ -18,7 +20,7 @@ docker compose ps
 Start-Process http://127.0.0.1:8080
 ```
 
-Lệnh tạo môi trường chỉ chạy một lần. Nó tạo `.env` từ `.env.example` với ba mật khẩu ngẫu nhiên khác nhau và dừng nếu file đã tồn tại. Cũng có thể sao chép mẫu rồi tự điền cả ba mật khẩu. Volume mới sẽ được khởi tạo bằng `ops/init.sql`. Mỗi API tự chạy migration của mình trước khi nhận yêu cầu. Giữ bản sao riêng của `.env`. Sau khi đã có volume, đổi mật khẩu trong PostgreSQL cùng lúc với cấu hình tương ứng.
+Lệnh tạo môi trường dùng lại `.env` nếu file đã tồn tại. Với checkout mới, lệnh tạo file từ `.env.example` với ba mật khẩu ngẫu nhiên khác nhau. Cũng có thể sao chép mẫu rồi tự điền cả ba mật khẩu. Volume mới sẽ được khởi tạo bằng `ops/init.sql`. Mỗi API tự chạy migration của mình trước khi nhận yêu cầu. Giữ bản sao riêng của `.env`. Sau khi đã có volume, đổi mật khẩu trong PostgreSQL cùng lúc với cấu hình tương ứng.
 
 ## Viết, xuất bản và quản trị
 
