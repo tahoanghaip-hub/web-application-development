@@ -15,10 +15,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.exc import DataError, OperationalError
 from sqlalchemy.orm import Session
 
+from .passwords import password_key
 from .database import database
-from .schema_v1 import sessions, users
+from .schema import sessions, users
+from .registration import router, check_identifiers, identifier_key
 
 app = FastAPI(title="NovelStudio Identity", docs_url=None, redoc_url=None)
+app.include_router(router)
 DB = Annotated[Session, Depends(database)]
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=64)]
 DisplayName = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
@@ -48,6 +51,10 @@ async def invalid_database_value(request, error):
 
 @app.exception_handler(RequestValidationError)
 async def invalid_input(request, error):
+    if any(e["loc"] and e["loc"][-1] == "code" for e in error.errors()):
+        return JSONResponse({"detail": "Nhập mã gồm đúng 4 chữ số."}, status_code=422)
+    if any(e["loc"] and e["loc"][-1] == "email" for e in error.errors()):
+        return JSONResponse({"detail": "Địa chỉ email không hợp lệ."}, status_code=422)
     return JSONResponse({"detail": "Kiểm tra tên đăng nhập, mật khẩu và bút danh."}, status_code=422)
 
 
@@ -59,14 +66,10 @@ async def csrf(request, call_next):
     return await call_next(request)
 
 
-def password_key(password, salt):
-    return hashlib.scrypt(password.encode(), salt=bytes.fromhex(salt), n=2**15, r=8, p=1,
-                          maxmem=64 * 1024 * 1024).hex()
-
-
 def create_user(db, data, role):
+    check_identifiers(db, identifier_key(data.username))
     salt = secrets.token_hex(16)
-    record = dict(id=str(uuid4()), username=data.username.lower(), display_name=data.username,
+    record = dict(id=str(uuid4()), username=identifier_key(data.username), display_name=data.username,
                   password_hash=salt + "$" + password_key(data.password, salt), role=role)
     try:
         db.execute(insert(users).values(**record))
@@ -105,17 +108,17 @@ def health(db: DB):
     return {"status": "ok"}
 
 
-@app.post(PREFIX + "/register", status_code=201)
-def register(data: Credentials, db: DB):
-    return create_user(db, data, "Author")
+class Login(Credentials):
+    username: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=254)]
 
 
 @app.post(PREFIX + "/login")
-def login(data: Credentials, request: Request, response: Response, db: DB):
-    row = db.execute(select(users).where(users.c.username == data.username.lower())).mappings().first()
+def login(data: Login, request: Request, response: Response, db: DB):
+    identifier = identifier_key(data.username)
+    row = db.execute(select(users).where((users.c.username == identifier) | (users.c.email == identifier))).mappings().first()
     salt, expected = row["password_hash"].split("$") if row else ("00" * 16, "")
     if not hmac.compare_digest(password_key(data.password, salt), expected):
-        raise HTTPException(401, "Sai tên đăng nhập hoặc mật khẩu.")
+        raise HTTPException(401, "Email, tên đăng nhập hoặc mật khẩu chưa đúng.")
     token = secrets.token_urlsafe(32)
     db.execute(delete(sessions).where(
         (sessions.c.expires_at <= func.now()) |

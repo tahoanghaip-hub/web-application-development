@@ -1,6 +1,7 @@
 """Run against a disposable localhost stack. Requires Python Playwright and Chrome."""
 import os
 import secrets
+from mailbox_helpers import read_code
 from pathlib import Path
 from datetime import date, timedelta
 from urllib.parse import urlparse
@@ -15,6 +16,15 @@ with sync_playwright() as pw:
     page = browser.new_page()
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
+    for path in ("/index.html", "/dashboard.html", "/statistics.html"):
+        page.goto(base + path)
+        page.locator("#user-status-badge").click()
+        page.locator(".dropdown-menu [data-bs-target='#login-modal']").click()
+        expect(page.get_by_label("Email hoặc tên đăng nhập", exact=True)).to_be_visible()
+        expect(page.locator("#login-form input")).to_have_count(2)
+        page.locator("#open-register").click()
+        expect(page.locator("#register-form input")).to_have_count(3)
+        expect(page.get_by_label("Tạo mật khẩu", exact=True)).to_be_visible()
     pending_session = []
     page.route("**/auth/me", lambda route: pending_session.append(route))
     page.goto(base + "/dashboard.html")
@@ -24,10 +34,24 @@ with sync_playwright() as pw:
     pending_session.pop().continue_()
     page.unroute("**/auth/me")
     page.locator("#access-message button").click()
-    page.locator("#login-username").fill(name)
+    page.locator("#open-register").click()
+    page.locator("#register-name").fill(name)
+    email = name + "@example.com"
+    page.locator("#register-email").fill(email)
+    page.locator("#register-password").fill(password)
+    page.get_by_role("button", name="Gửi mã xác nhận").click()
+    expect(page.locator("#verify-form")).to_be_visible()
+    code = read_code(email)
+    page.locator("#resend-code").click()
+    expect(page.locator("#auth-message")).to_contain_text("60 giây")
+    page.locator("#verify-code").fill(f"{(int(code)+1)%10000:04d}")
+    page.get_by_role("button", name="Xác nhận", exact=True).click()
+    expect(page.locator("#auth-message")).to_contain_text("không đúng")
+    page.locator("#verify-code").fill(code)
+    page.get_by_role("button", name="Xác nhận", exact=True).click()
+    expect(page.locator("#auth-message")).to_contain_text("Đã đăng ký")
+    expect(page.locator("#login-username")).to_have_value(name)
     page.locator("#login-password").fill(password)
-    page.locator("button[value=register]").click()
-    expect(page.locator("#auth-message")).to_contain_text("Đã tạo")
     page.locator("button[value=login]").click()
     page.locator("#open-add-modal-btn").click()
     page.locator("#novel-title").fill(name)

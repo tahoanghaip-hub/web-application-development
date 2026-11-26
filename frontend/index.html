@@ -212,14 +212,31 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <form id="login-form" class="p-4">
-          <label for="login-username" class="form-label">Tên đăng nhập</label>
-          <input id="login-username" class="form-control mb-3" autocomplete="username" minlength="3" maxlength="64" required>
-          <label for="login-password" class="form-label">Mật khẩu (ít nhất 8 ký tự)</label>
+          <label for="login-username" class="form-label">Email hoặc tên đăng nhập</label>
+          <input id="login-username" class="form-control mb-3" autocomplete="username" minlength="3" maxlength="254" required>
+          <label for="login-password" class="form-label">Mật khẩu</label>
           <input id="login-password" class="form-control mb-3" type="password" autocomplete="current-password" minlength="8" maxlength="256" required>
           <button class="btn btn-primary-novel" value="login">Đăng nhập</button>
-          <button class="btn btn-outline-novel" value="register">Đăng ký</button>
-          <p id="auth-message" class="mt-2 mb-0" role="status"></p>
+          <button class="btn btn-outline-novel" id="open-register" type="button">Đăng ký</button>
         </form>
+        <form id="register-form" class="p-4" hidden>
+          <label for="register-name" class="form-label">Tên đăng nhập</label>
+          <input id="register-name" class="form-control mb-3" autocomplete="username" minlength="3" maxlength="64" required>
+          <label for="register-email" class="form-label">Email</label>
+          <input id="register-email" class="form-control mb-3" type="email" autocomplete="email" maxlength="254" required>
+          <label for="register-password" class="form-label">Tạo mật khẩu</label>
+          <input id="register-password" class="form-control mb-3" type="password" autocomplete="new-password" minlength="8" maxlength="256" required>
+          <button class="btn btn-primary-novel">Gửi mã xác nhận</button>
+          <button class="btn btn-outline-novel back-login" type="button">Quay lại đăng nhập</button>
+        </form>
+        <form id="verify-form" class="p-4" hidden>
+          <label for="verify-code" class="form-label">Mã xác nhận gồm 4 chữ số</label>
+          <input id="verify-code" class="form-control mb-3" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4}" maxlength="4" required>
+          <button class="btn btn-primary-novel">Xác nhận</button>
+          <button id="resend-code" class="btn btn-outline-novel" type="button">Gửi lại mã</button>
+          <button class="btn btn-link back-login" type="button">Quay lại đăng nhập</button>
+        </form>
+        <p id="auth-message" class="px-4" role="status"></p>
         <form id="profile-form" class="p-4" hidden>
           <label for="display-name" class="form-label">Bút danh</label>
           <input id="display-name" class="form-control mb-3" maxlength="100" required>

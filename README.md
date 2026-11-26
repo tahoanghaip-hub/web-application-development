@@ -15,16 +15,24 @@ docker version
 docker compose version
 powershell -NoProfile -ExecutionPolicy RemoteSigned -File .\ops\New-Environment.ps1
 docker compose config --quiet
-docker compose up -d --build --wait
+docker compose --profile mailpit up -d --build --wait
 docker compose ps
 Start-Process http://127.0.0.1:8080
 ```
 
-Lệnh tạo môi trường dùng lại `.env` nếu file đã tồn tại. Với checkout mới, lệnh tạo file từ `.env.example` với ba mật khẩu ngẫu nhiên khác nhau. Cũng có thể sao chép mẫu rồi tự điền cả ba mật khẩu. Volume mới sẽ được khởi tạo bằng `ops/init.sql`. Mỗi API tự chạy migration của mình trước khi nhận yêu cầu. Giữ bản sao riêng của `.env`. Sau khi đã có volume, đổi mật khẩu trong PostgreSQL cùng lúc với cấu hình tương ứng.
+Lệnh tạo môi trường dùng lại `.env` nếu file đã tồn tại. Với checkout mới, lệnh tạo file từ `.env.example` với ba mật khẩu và một khóa HMAC ngẫu nhiên độc lập. Cũng có thể sao chép mẫu rồi tự điền ba mật khẩu và khóa HMAC. Volume mới sẽ được khởi tạo bằng `ops/init.sql`. Mỗi API tự chạy migration của mình trước khi nhận yêu cầu. Giữ bản sao riêng của `.env`. Sau khi đã có volume, đổi mật khẩu trong PostgreSQL cùng lúc với cấu hình tương ứng.
+
+## Email xác minh đăng ký
+
+Khi nâng cấp checkout đã có `.env`, thêm `VERIFICATION_HMAC_KEY` vào file đó. Dùng một khóa ngẫu nhiên riêng cho mỗi môi trường, ví dụ tạo bằng `python -c "import secrets; print(secrets.token_hex(32))"`. Thay khóa sẽ làm mất hiệu lực các mã đang chờ.
+
+- **Máy phát triển** dùng cấu hình SMTP trong `.env.example` và profile `mailpit` như lệnh khởi động ở trên. Mở hộp thư tại `http://127.0.0.1:8025`. Biến `MAILPIT_PORT` chọn cổng giao diện. SMTP của Mailpit chỉ dùng bên trong Docker.
+- **Máy gửi thư thật** điền `SMTP_HOST`, `SMTP_PORT`, `SMTP_FROM`, `SMTP_USERNAME` và `SMTP_PASSWORD` theo nhà cung cấp trong `.env`. Chọn `SMTP_SECURITY=starttls` (thường là cổng 587) hoặc `ssl` (thường là 465), rồi chạy `docker compose up -d --build --wait`. Chế độ `plain` dành cho Mailpit.
+- Mã gồm bốn chữ số, có hiệu lực năm phút. Có thể gửi lại sau 60 giây. Các yêu cầu dùng cùng email chia sẻ hạn mức năm lần nhập sai trong cửa sổ 15 phút. Gửi lại thành công thay thế mã cũ.
 
 ## Viết, xuất bản và quản trị
 
-1. Mở **Trạm Sáng Tác → Đăng nhập để mở không gian cá nhân**. Nhập tên và mật khẩu, chọn **Đăng ký**, rồi **Đăng nhập**. Menu tài khoản cho phép đổi bút danh và đăng xuất.
+1. Mở **Trạm Sáng Tác → Đăng nhập để mở không gian cá nhân**. Chọn **Đăng ký**, điền tên đăng nhập, email và mật khẩu, rồi chọn **Gửi mã xác nhận**. Nhập mã từ email. Sau khi xác minh, đăng nhập bằng email hoặc tên đăng nhập và mật khẩu. Tài khoản cũ tiếp tục dùng tên đăng nhập. Menu tài khoản cho phép đổi bút danh và đăng xuất.
 2. Chọn **Thêm tác phẩm**, nhập thông tin và hạn hoàn thành. Mở nút hình ngòi bút ở hàng vừa tạo, thêm chương, soạn nội dung và chọn **Lưu phiên bản**. Có thể lọc danh sách theo từ khóa, trạng thái, mức ưu tiên và chuyển trang.
 3. Chờ thông báo **Đã lưu phiên bản**. Nếu mất kết nối, giữ tab mở và bấm lưu lại. Nếu phiên đã hết hạn, đăng nhập lại cùng tài khoản trong menu rồi thử lưu. Bản đang gõ nằm trong bộ nhớ tab cho đến khi server xác nhận. Tải lại hoặc đóng tab có thể làm mất phần chưa lưu.
 4. Chọn **Khôi phục** ở một bản cũ để tạo bản mới từ nội dung đó. Chọn **Xuất bản** ở phiên bản muốn chia sẻ. Tên chương, thông tin tác phẩm tại thời điểm xuất bản và nội dung bản được chọn sẽ xuất hiện ở trang chủ. Mỗi chương có tối đa một bản công khai. Muốn thu hồi, chọn **Gỡ chương công khai**. Đánh dấu tác phẩm hoàn thành chỉ cập nhật tiến độ.
@@ -99,24 +107,26 @@ Máy cá nhân cần bật, có kết nối tới người dùng và các contai
 
 ## Kiểm chứng và tài liệu
 
-Để chạy lại kiểm thử trên một project thử với volume mới, dùng cổng localhost riêng. Các bài thử tạo tài khoản giả.
+Để chạy lại kiểm thử trên một project thử với volume mới, dùng cổng localhost riêng. Các bài thử tạo tài khoản giả. Bài API chờ hơn sáu phút để kiểm tra hạn gửi lại và hạn dùng mã theo đồng hồ thật. Có thể đặt thêm `TEST_LEGACY_USERNAME` và `TEST_LEGACY_PASSWORD` của tài khoản thử đã tồn tại ở migration 0001, với tên đăng nhập dạng email, để kiểm tra cả xung đột định danh sau nâng cấp.
 
 ```powershell
+# Chạy trong cửa sổ PowerShell riêng cho kiểm thử
+foreach ($key in 'POSTGRES_PASSWORD','IDENTITY_DB_PASSWORD','STUDIO_DB_PASSWORD','VERIFICATION_HMAC_KEY') {
+    [Environment]::SetEnvironmentVariable($key, (py -c "import secrets; print(secrets.token_hex(32))"), 'Process')
+}
 $env:GATEWAY_PORT = '18081'
 $env:GATEWAY_BIND = '127.0.0.1'
-$env:COOKIE_SECURE = 'false'
-docker compose -p novelstudio-qa up -d --build --wait
+$env:MAILPIT_PORT = '18025'
+$env:MAILPIT_URL = 'http://127.0.0.1:18025'
 $env:TEST_URL = 'http://127.0.0.1:18081'
+docker compose --env-file .env.example --profile mailpit -p novelstudio-qa up -d --build --wait
 py tests/api_smoke.py
 # Bài thử UI dùng Chrome đã cài trên Windows và Python Playwright
 py -m venv .venv
 .\.venv\Scripts\python -m pip install playwright
 .\.venv\Scripts\python tests/browser_smoke.py
-docker compose -p novelstudio-qa restart
-docker compose -p novelstudio-qa up -d --wait
-# Mở lại phiên tác giả trong trình duyệt để đối chiếu nội dung sau restart
-docker compose -p novelstudio-qa down
-Remove-Item Env:GATEWAY_PORT, Env:GATEWAY_BIND, Env:COOKIE_SECURE, Env:TEST_URL
+# Dọn project và volume chứa dữ liệu giả vừa tạo
+docker compose --env-file .env.example --profile mailpit -p novelstudio-qa down -v
 ```
 
 [Kiến trúc, use case, ERD và danh sách API](docs/full-stack.md) · [Kết quả kiểm thử, ảnh chạy thật và đối chiếu rubric](docs/verification.md). Các báo cáo frontend ban đầu trong `docs/` được giữ lại làm tài liệu lịch sử.

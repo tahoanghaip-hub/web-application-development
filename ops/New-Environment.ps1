@@ -10,7 +10,7 @@ if ([IO.File]::Exists($envFile)) {
 $template = [IO.File]::ReadAllText((Join-Path $root '.env.example'))
 $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
 try {
-    foreach ($key in 'POSTGRES_PASSWORD', 'IDENTITY_DB_PASSWORD', 'STUDIO_DB_PASSWORD') {
+    foreach ($key in 'POSTGRES_PASSWORD', 'IDENTITY_DB_PASSWORD', 'STUDIO_DB_PASSWORD', 'VERIFICATION_HMAC_KEY') {
         $bytes = New-Object byte[] 32
         $rng.GetBytes($bytes)
         $secret = [BitConverter]::ToString($bytes).Replace('-', '').ToLowerInvariant()
@@ -28,4 +28,4 @@ try {
         $stream.Write($encoded, 0, $encoded.Length)
     } finally { $stream.Dispose() }
 } finally { $rng.Dispose() }
-Write-Output 'Created .env with three independent passwords.'
+Write-Output 'Created .env with independent secrets.'

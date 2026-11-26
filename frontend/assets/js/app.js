@@ -72,9 +72,9 @@ let loginForCreation = false;
 const createDestination = 'dashboard.html#create-novel';
 
 function showAccount(user) {
+  if (user || account) authScreen(user ? null : 'login');
   account = user;
   $('user-status-badge').textContent = user ? user.displayName + ' · ' + user.role : 'Khách';
-  $('login-form').hidden = Boolean(user);
   $('profile-form').hidden = !user;
   $('logout-btn').hidden = !user;
   $('admin-users').hidden = user?.role !== 'Admin';
@@ -108,7 +108,7 @@ on($('create-novel-btn'), 'click', async event => {
   } catch (error) {
     if (error.status !== 401) throw error;
     loginForCreation = true;
-    $('auth-message').textContent = '';
+    authScreen('login');
     bootstrap.Modal.getOrCreateInstance($('login-modal')).show(button);
   } finally {
     button.disabled = false;
@@ -116,16 +116,61 @@ on($('create-novel-btn'), 'click', async event => {
 });
 on($('login-modal'), 'hide.bs.modal', () => { loginForCreation = false; });
 
+let requestId;
+function authScreen(screen, message = '') {
+  for (const name of ['login', 'register', 'verify']) {
+    $(name + '-form').hidden = screen !== name;
+  }
+  $('auth-message').textContent = message;
+}
+on($('open-register'), 'click', () => authScreen('register'));
+for (const button of document.querySelectorAll('.back-login')) {
+  on(button, 'click', () => authScreen('login'));
+}
+on($('register-form'), 'submit', async event => {
+  event.preventDefault();
+  if ($('register-form').inert) return;
+  $('register-form').inert = true;
+  try {
+    const result = await api('/auth/register', 'POST', {
+      username: $('register-name').value, email: $('register-email').value, password: $('register-password').value
+    });
+    requestId = result.requestId;
+    $('register-password').value = '';
+    $('verify-code').value = '';
+    authScreen('verify', 'Đã gửi mã tới ' + $('register-email').value);
+  } catch (error) { $('auth-message').textContent = error.message; }
+  finally { $('register-form').inert = false; }
+});
+on($('resend-code'), 'click', async () => {
+  if ($('verify-form').inert) return;
+  $('verify-form').inert = true;
+  try {
+    await api('/auth/register/resend', 'POST', {requestId});
+    $('verify-code').value = '';
+    $('auth-message').textContent = 'Đã gửi mã mới.';
+  } catch (error) { $('auth-message').textContent = error.message; }
+  finally { $('verify-form').inert = false; }
+});
+on($('verify-form'), 'submit', async event => {
+  event.preventDefault();
+  if ($('verify-form').inert) return;
+  $('verify-form').inert = true;
+  try {
+    const result = await api('/auth/register/verify', 'POST', {requestId, code: $('verify-code').value});
+    $('login-username').value = result.username;
+    $('login-password').value = '';
+    authScreen('login', 'Đã đăng ký thành công. Bạn có thể đăng nhập.');
+  } catch (error) { $('auth-message').textContent = error.message; }
+  finally { $('verify-form').inert = false; }
+});
 on($('login-form'), 'submit', async event => {
   event.preventDefault();
-  const register = event.submitter?.value === 'register';
   try {
-    const user = await api('/auth/' + (register ? 'register' : 'login'), 'POST', {
+    const user = await api('/auth/login', 'POST', {
       username: $('login-username').value, password: $('login-password').value
     });
-    if (register) {
-      $('auth-message').textContent = 'Đã tạo tài khoản. Bấm Đăng nhập để tiếp tục.';
-    } else if (loginForCreation) {
+    if (loginForCreation) {
       loginForCreation = false;
       location.assign(createDestination);
     } else if (user.id === previousId) {

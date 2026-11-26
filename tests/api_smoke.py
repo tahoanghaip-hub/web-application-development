@@ -3,6 +3,8 @@ import copy
 import json
 import os
 import secrets
+import time
+from mailbox_helpers import read_code, messages
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from http.cookiejar import CookieJar
@@ -31,7 +33,8 @@ class Client:
         except HTTPError as error:
             response = error
         with response:
-            assert response.status == expect, (method, path, response.status, expect)
+            statuses = expect if isinstance(expect, tuple) else (expect,)
+            assert response.status in statuses, (method, path, response.status, expect)
             if response.headers.get_content_type() == "application/json":
                 return json.load(response)
 
@@ -44,14 +47,67 @@ class Client:
 
 def signup(client):
     credentials = {"username": "test-" + secrets.token_hex(6), "password": secrets.token_urlsafe(24)}
-    user = client.auth("/register", "POST", credentials | {"role": "Admin"}, 201)
-    assert user["role"] == "Author"
-    client.auth("/register", "POST", credentials, 409)
+    email = credentials["username"] + "@example.com"
+    registration = credentials | {"email": email.upper(), "role": "Admin"}
+    client.auth("/register", "POST", credentials, 422)
+    client.auth("/register", "POST", registration | {"email": "invalid"}, 422)
+    challenge = client.auth("/register", "POST", registration, 202)
+    assert set(challenge) == {"requestId"}
+    code = read_code(email)
+    client.auth("/login", "POST", credentials, 401)
+    client.auth("/register/verify", "POST", challenge | {"code": f"{(int(code)+1)%10000:04d}"}, 400)
+    client.auth("/register/resend", "POST", challenge, 429)
+    client.auth("/register", "POST", registration, 429)
+
+    def verify_once(_):
+        return Client().auth("/register/verify", "POST", challenge | {"code": code}, (201, 400, 409))
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(verify_once, range(2)))
+    assert results.count({"username": credentials["username"]}) == 1
+    assert sum("detail" in result for result in results) == 1
+    client.auth("/register/verify", "POST", challenge | {"code": code}, 400)
+    client.auth("/register", "POST", registration | {"email": "other@example.com"}, 409)
+    client.auth("/register", "POST", registration | {"username": "other"}, 409)
     client.auth("/login", "POST", credentials, 403, csrf=False)
-    client.auth("/login", "POST", credentials)
+    user = client.auth("/login", "POST", credentials | {"username": email.upper()})
+    assert user["role"] == "Author"
+    assert client.auth("/login", "POST", credentials) == user
+    assert len(messages(email)) == 1
     assert client.auth("/me") == user
     assert "HttpOnly" in next(iter(client.cookies))._rest
     return user
+
+
+def check_legacy_account(client, username, password):
+    user = client.auth("/login", "POST", {"username": username.upper(), "password": password})
+    assert user["username"] == username and client.auth("/me") == user
+    client.auth("/register", "POST", {"username": "other-" + secrets.token_hex(4),
+                "password": password, "email": username}, 409)
+
+
+def test_expiration_and_resend():
+    client = Client()
+    name = "expiry-" + secrets.token_hex(5)
+    email = name + "@example.com"
+    data = {"email": email, "username": name, "password": secrets.token_urlsafe(18)}
+    challenge = client.auth("/register", "POST", data, 202)
+    first = read_code(email)
+    time.sleep(61)
+    client.auth("/register/resend", "POST", challenge)
+    second = read_code(email, 2)
+    assert first != second
+    client.auth("/register/verify", "POST", challenge | {"code": first}, 400)
+    print("PASS resend invalidates previous code; waiting for actual expiry", flush=True)
+    time.sleep(301)
+    client.auth("/register/verify", "POST", challenge | {"code": second}, 400)
+    client.auth("/register/resend", "POST", challenge)
+    code = read_code(email, 3)
+    wrong = f"{(int(code)+1)%10000:04d}"
+    for _ in range(4):
+        client.auth("/register/verify", "POST", challenge | {"code": wrong}, 400)
+    client.auth("/register/verify", "POST", challenge | {"code": code}, 429)
+    print("PASS expiry and cumulative attempt limit")
 
 
 def run():
@@ -59,6 +115,8 @@ def run():
     guest.call("/internal/session", expect=404)
     guest.studio("/novels", expect=401)
     guest.studio("/public")
+    if os.getenv("TEST_LEGACY_USERNAME"):
+        check_legacy_account(Client(), os.environ["TEST_LEGACY_USERNAME"], os.environ["TEST_LEGACY_PASSWORD"])
     alice = signup(a)
     bob = signup(b)
     assert a.auth("/me", "PATCH", {"displayName": "Bút danh thử"})["displayName"] == "Bút danh thử"
@@ -149,3 +207,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+    test_expiration_and_resend()
