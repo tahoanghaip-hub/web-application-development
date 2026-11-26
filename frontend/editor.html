@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="vi" data-bs-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOVELSTUDIO — Soạn Thảo Bản Thảo</title>
+  <meta name="description" content="Không gian soạn thảo chương truyện và kiểm soát phiên bản riêng tư của NovelStudio.">
+
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%20%220%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>✍️</text></svg>">
+
+  <link rel="stylesheet" href="vendor/bootstrap.min.css">
+  <link rel="stylesheet" href="vendor/css/all.min.css">
+  <link rel="stylesheet" href="assets/css/themes.css">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/editor.css">
+</head>
+
+<body>
+
+  <!-- ==========================================
+       SLIM EDITOR TOPBAR
+       ========================================== -->
+  <nav class="editor-navbar" aria-label="Thanh điều hướng soạn thảo">
+    <div class="container-fluid px-3 px-lg-4">
+      <div class="editor-navbar-inner">
+        <div class="editor-navbar-left">
+          <a id="back-to-studio-btn" href="dashboard.html" class="btn btn-outline-novel btn-sm">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            <span class="btn-text-hide-xs">Quay lại Studio</span>
+          </a>
+          <span id="editor-novel-title" class="editor-novel-title">Soạn thảo tác phẩm</span>
+        </div>
+
+        <div class="editor-navbar-right">
+          <button id="theme-toggle-btn" class="theme-btn" type="button" aria-label="Đổi giao diện Sáng/Tối">
+            <i class="fa-solid fa-moon text-primary"></i>
+          </button>
+
+          <div class="dropdown">
+            <div id="user-status-badge" class="user-badge-wrapper cursor-pointer" data-bs-toggle="dropdown"
+              aria-expanded="false" role="button" tabindex="0">
+              <span class="user-status-dot"></span>
+              <span>Khách</span>
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+              <li>
+                <button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#login-modal">
+                  <i class="fa-solid fa-user-pen me-2 text-primary"></i> Tài khoản / Đăng nhập
+                </button>
+              </li>
+              <li>
+                <a class="dropdown-item" href="index.html">
+                  <i class="fa-solid fa-compass me-2 text-secondary"></i> Khám Phá
+                </a>
+              </li>
+              <li>
+                <hr class="dropdown-divider">
+              </li>
+              <li>
+                <button id="logout-btn" class="dropdown-item text-danger" type="button">
+                  <i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Đăng xuất
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Loading before sessionReady -->
+  <div id="session-loading" class="container py-5 text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Đang kiểm tra phiên đăng nhập...</span>
+    </div>
+  </div>
+
+  <!-- Unauthenticated state -->
+  <div id="access-message" class="container py-5" hidden>
+    <div class="editor-state-card">
+      <div class="empty-state-icon"><i class="fa-solid fa-lock"></i></div>
+      <h1 class="h4 fw-bold mb-2">Đăng nhập để mở trang soạn thảo</h1>
+      <p class="text-secondary mb-4">Khu vực biên tập và bản thảo riêng tư chỉ dành cho tác giả sở hữu tác phẩm.</p>
+      <div class="d-flex justify-content-center gap-2 flex-wrap">
+        <button class="btn btn-primary-novel" type="button" data-bs-toggle="modal" data-bs-target="#login-modal">
+          <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Đăng nhập
+        </button>
+        <a href="dashboard.html" class="btn btn-outline-novel">Quay lại Studio</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MAIN EDITOR
+       ========================================== -->
+  <main hidden class="editor-main">
+    <div id="editor-loading" class="container py-5 text-center">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Đang tải tác phẩm...</span>
+      </div>
+    </div>
+
+    <div id="editor-error-state" class="container px-3" hidden>
+      <div class="editor-state-card">
+        <div class="empty-state-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h1 id="editor-error-title" class="h4 fw-bold mb-2">Không thể mở tác phẩm</h1>
+        <p id="editor-error-desc" class="text-secondary mb-4"></p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+          <button id="editor-retry-btn" type="button" class="btn btn-outline-novel" hidden>
+            <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Thử lại
+          </button>
+          <a href="dashboard.html" class="btn btn-primary-novel">Quay lại Studio</a>
+          <a href="index.html" class="btn btn-outline-novel">Về Khám phá</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="editor-shell" class="editor-shell" hidden>
+      <!-- Sticky Editor Toolbar -->
+      <div class="editor-toolbar">
+        <div class="editor-toolbar-inner">
+          <div class="editor-toolbar-left">
+            <button id="toggle-chapters-btn" type="button" class="btn btn-outline-novel btn-sm"
+              aria-label="Mở hoặc thu gọn danh sách chương" aria-controls="editor-sidebar" aria-expanded="true">
+              <i class="fa-solid fa-bars" aria-hidden="true"></i>
+              <span>Chương</span>
+            </button>
+            <span id="toolbar-chapter-label" class="toolbar-chapter-label">Chưa chọn chương</span>
+          </div>
+
+          <div class="editor-toolbar-actions">
+            <p id="save-status" class="save-status-pill" data-state="idle" role="status" aria-live="polite">Sẵn sàng</p>
+
+            <button id="relogin-inline-btn" type="button" class="btn btn-outline-novel btn-sm text-warning" hidden
+              data-bs-toggle="modal" data-bs-target="#login-modal">
+              <i class="fa-solid fa-key" aria-hidden="true"></i> Đăng nhập lại
+            </button>
+
+            <button id="save-version-btn" type="button" class="btn btn-primary-novel btn-sm">
+              <i class="fa-solid fa-code-commit" aria-hidden="true"></i>
+              <span>Lưu phiên bản</span>
+            </button>
+
+            <button id="toggle-history-btn" type="button" class="btn btn-outline-novel btn-sm"
+              aria-label="Mở lịch sử phiên bản" aria-controls="history-offcanvas">
+              <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i>
+              <span class="btn-text-hide-xs">Lịch sử</span>
+              <span id="history-btn-count" class="badge bg-primary-subtle text-primary rounded-pill">0</span>
+            </button>
+
+            <div class="dropdown">
+              <button id="chapter-settings-btn" type="button" class="btn btn-outline-novel btn-sm"
+                data-bs-toggle="dropdown" aria-expanded="false" aria-label="Cài đặt chương">
+                <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                <span class="visually-hidden">Cài đặt chương</span>
+              </button>
+              <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                <li>
+                  <button id="rename-chapter" class="dropdown-item" type="button">
+                    <i class="fa-solid fa-pen me-2 text-primary"></i> Đổi tên chương
+                  </button>
+                </li>
+                <li>
+                  <button id="unpublish" class="dropdown-item" type="button" hidden>
+                    <i class="fa-solid fa-eye-slash me-2 text-warning"></i> Gỡ chương công khai
+                  </button>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <button id="delete-chapter" class="dropdown-item text-danger" type="button">
+                    <i class="fa-solid fa-trash-can me-2"></i> Xóa chương
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workspace: Left Collapsible Chapters + Center Writing Area -->
+      <div id="editor-workspace" class="editor-workspace">
+        <aside id="editor-sidebar" class="offcanvas-lg offcanvas-start editor-sidebar" tabindex="-1"
+          aria-labelledby="editorSidebarLabel">
+          <div class="offcanvas-header">
+            <div class="d-flex align-items-center gap-2 min-w-0">
+              <i class="fa-solid fa-layer-group text-primary" aria-hidden="true"></i>
+              <h2 class="h6 fw-bold mb-0 text-truncate" id="editorSidebarLabel">Danh sách chương</h2>
+              <span id="chapter-count-badge" class="badge bg-primary-subtle text-primary rounded-pill">0</span>
+            </div>
+            <button type="button" class="btn-close d-lg-none" data-bs-dismiss="offcanvas"
+              data-bs-target="#editor-sidebar" aria-label="Đóng danh sách chương"></button>
+          </div>
+
+          <div class="offcanvas-body">
+            <div class="editor-sidebar-top-action">
+              <button id="new-chapter-btn" type="button" class="btn btn-primary-novel btn-sm w-100">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Thêm chương
+              </button>
+            </div>
+            <div id="chapter-list" class="compact-row-list" role="navigation" aria-label="Danh sách chương của tác phẩm"></div>
+          </div>
+        </aside>
+
+        <section class="editor-canvas-wrap">
+          <div class="editor-canvas">
+            <div id="editor-notice" class="alert alert-info py-2 px-3 small mb-3" hidden role="status"></div>
+
+            <!-- Empty chapters state -->
+            <div id="editor-empty-chapters" class="editor-state-card" hidden>
+              <div class="empty-state-icon"><i class="fa-solid fa-file-circle-plus"></i></div>
+              <h2 class="h4 fw-bold mb-2">Tác phẩm chưa có chương nào</h2>
+              <p class="text-secondary mb-4">Hãy thêm chương đầu tiên để bắt đầu viết và lưu các phiên bản bản thảo.</p>
+              <button id="empty-new-chapter-btn" type="button" class="btn btn-primary-novel">
+                <i class="fa-solid fa-plus" aria-hidden="true"></i> Thêm chương
+              </button>
+            </div>
+
+            <!-- Writing Area -->
+            <div id="editor-writing-area" class="editor-writing-card">
+              <div class="editor-chapter-head">
+                <div class="d-flex align-items-center gap-2 flex-wrap min-w-0">
+                  <h1 id="active-chapter-heading" class="h5 fw-bold mb-0 text-break">Chương</h1>
+                  <span id="active-chapter-status-badge" class="compact-status-pill is-draft">Bản nháp</span>
+                </div>
+                <small id="editor-word-count" class="text-secondary">0 từ · 0 ký tự</small>
+              </div>
+
+              <!-- Version note close to save action -->
+              <div class="editor-save-strip">
+                <i class="fa-solid fa-tag text-secondary" aria-hidden="true"></i>
+                <label for="commit-message-input" class="visually-hidden">Ghi chú phiên bản</label>
+                <input type="text" id="commit-message-input" class="form-control form-control-sm"
+                  placeholder="Ghi chú phiên bản (vd: Phác thảo cảnh mở đầu...)" maxlength="200">
+              </div>
+
+              <div>
+                <label for="draft-editor-textarea" class="visually-hidden">Nội dung bản thảo</label>
+                <textarea id="draft-editor-textarea" class="form-control draft-editor-textarea"
+                  placeholder="Bắt đầu viết những dòng văn đầu tiên của bạn tại đây..."></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- ==========================================
+       HISTORY OFFCANVAS (ON-DEMAND)
+       ========================================== -->
+  <div class="offcanvas offcanvas-end editor-history-offcanvas" tabindex="-1" id="history-offcanvas"
+    aria-labelledby="historyOffcanvasLabel">
+    <div class="offcanvas-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="fa-solid fa-timeline text-primary" aria-hidden="true"></i>
+        <h2 class="h6 fw-bold mb-0" id="historyOffcanvasLabel">Lịch sử phiên bản</h2>
+        <span class="badge bg-secondary-subtle text-secondary" id="version-count-badge">0 bản</span>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng lịch sử"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div id="history-unpublish-bar" class="mb-3" hidden>
+        <button id="history-unpublish-btn" type="button" class="btn btn-outline-novel btn-sm w-100 text-warning">
+          <i class="fa-solid fa-eye-slash" aria-hidden="true"></i> Gỡ bản đang công khai khỏi Khám phá
+        </button>
+      </div>
+      <div id="version-timeline-list" class="timeline-list"></div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       CHAPTER DETAIL MODAL (MOBILE ⋯ MENU)
+       ========================================== -->
+  <div class="modal fade modal-sheet-mobile" id="chapter-detail-modal" tabindex="-1"
+    aria-labelledby="editorChapterDetailTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="min-w-0">
+            <div id="editor-detail-num" class="small text-secondary fw-semibold"></div>
+            <h5 class="modal-title fw-bold text-break" id="editorChapterDetailTitle">Chi tiết chương</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div id="editor-detail-status-wrap" class="mb-3"></div>
+          <dl class="row small mb-0 g-2">
+            <dt class="col-5 text-secondary">Số phiên bản</dt>
+            <dd class="col-7 mb-0" id="editor-detail-versions">0</dd>
+            <dt class="col-5 text-secondary">Lưu gần nhất</dt>
+            <dd class="col-7 mb-0" id="editor-detail-updated">Chưa lưu</dd>
+          </dl>
+        </div>
+        <div class="modal-footer flex-column align-items-stretch gap-2">
+          <button id="editor-detail-open" type="button" class="btn btn-primary-novel">
+            <i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Mở soạn thảo
+          </button>
+          <button id="editor-detail-rename" type="button" class="btn btn-outline-novel">
+            <i class="fa-solid fa-pen" aria-hidden="true"></i> Đổi tên chương
+          </button>
+          <button id="editor-detail-unpublish" type="button" class="btn btn-outline-novel text-warning" hidden>
+            <i class="fa-solid fa-eye-slash" aria-hidden="true"></i> Gỡ chương công khai
+          </button>
+          <button id="editor-detail-delete" type="button" class="btn btn-outline-novel text-danger">
+            <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Xóa chương
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       LOGIN / SWITCH USER MODAL
+       ========================================== -->
+  <div class="modal fade" id="login-modal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold" id="loginModalLabel">
+            <i class="fa-solid fa-id-card text-primary me-2"></i> Hồ Sơ Tác Giả Sáng Tác
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="login-form" class="p-4">
+          <label for="login-username" class="form-label">Email hoặc tên đăng nhập</label>
+          <input id="login-username" class="form-control mb-3" autocomplete="username" minlength="3" maxlength="254" required>
+          <label for="login-password" class="form-label">Mật khẩu</label>
+          <input id="login-password" class="form-control mb-3" type="password" autocomplete="current-password" minlength="8" maxlength="256" required>
+          <button class="btn btn-primary-novel" value="login">Đăng nhập</button>
+          <button class="btn btn-outline-novel" id="open-register" type="button">Đăng ký</button>
+        </form>
+        <form id="register-form" class="p-4" hidden>
+          <label for="register-name" class="form-label">Tên đăng nhập</label>
+          <input id="register-name" class="form-control mb-3" autocomplete="username" minlength="3" maxlength="64" required>
+          <label for="register-email" class="form-label">Email</label>
+          <input id="register-email" class="form-control mb-3" type="email" autocomplete="email" maxlength="254" required>
+          <label for="register-password" class="form-label">Tạo mật khẩu</label>
+          <input id="register-password" class="form-control mb-3" type="password" autocomplete="new-password" minlength="8" maxlength="256" required>
+          <button class="btn btn-primary-novel">Gửi mã xác nhận</button>
+          <button class="btn btn-outline-novel back-login" type="button">Quay lại đăng nhập</button>
+        </form>
+        <form id="verify-form" class="p-4" hidden>
+          <label for="verify-code" class="form-label">Mã xác nhận gồm 4 chữ số</label>
+          <input id="verify-code" class="form-control mb-3" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4}" maxlength="4" required>
+          <button class="btn btn-primary-novel">Xác nhận</button>
+          <button id="resend-code" class="btn btn-outline-novel" type="button">Gửi lại mã</button>
+          <button class="btn btn-link back-login" type="button">Quay lại đăng nhập</button>
+        </form>
+        <p id="auth-message" class="px-4" role="status"></p>
+        <form id="profile-form" class="p-4" hidden>
+          <label for="display-name" class="form-label">Bút danh</label>
+          <input id="display-name" class="form-control mb-3" maxlength="100" required>
+          <button class="btn btn-primary-novel">Lưu hồ sơ</button>
+          <button type="button" id="admin-users" class="btn btn-outline-novel" hidden>Danh sách tài khoản</button>
+          <ul id="account-list" class="mt-3"></ul>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="vendor/bootstrap.bundle.min.js"></script>
+  <script src="vendor/sweetalert2.min.js"></script>
+  <script type="module" src="assets/js/app.js"></script>
+  <script type="module" src="assets/js/controllers/editorController.js"></script>
+</body>
+
+</html>

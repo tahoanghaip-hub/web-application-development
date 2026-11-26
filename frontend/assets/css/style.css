@@ -346,3 +346,187 @@ p, span, li, small {
 .cursor-pointer {
   cursor: pointer;
 }
+
+/* ============================================================
+   GLOBAL MOBILE SAFETY & SHARED COMPACT LISTS / BOTTOM SHEETS
+   ============================================================ */
+html,
+body {
+  overflow-x: clip;
+}
+
+.user-badge-wrapper {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 379.98px) {
+  .brand-logo {
+    font-size: 1.15rem;
+    gap: 0.45rem;
+  }
+
+  .brand-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Compact horizontal row list (mobile chapters & novels) */
+.compact-row-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  transition: background-color 0.15s ease;
+  min-width: 0;
+}
+
+.compact-row:last-child {
+  border-bottom: none;
+}
+
+.compact-row.is-active {
+  background-color: var(--accent-subtle);
+}
+
+.compact-row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  text-decoration: none;
+  color: var(--text-primary);
+  background: transparent;
+  border: 0;
+  padding: 0.2rem 0;
+  text-align: left;
+  cursor: pointer;
+  min-height: 40px;
+}
+
+.compact-row-main:focus-visible,
+.btn-more-row:focus-visible,
+.compact-row a:focus-visible,
+.compact-row button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.compact-row-num {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 0.4rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.compact-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.compact-row-title {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+}
+
+.compact-row.is-active .compact-row-title {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.compact-row-sub {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.compact-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.compact-status-pill {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.compact-status-pill.is-published {
+  background-color: var(--color-success-subtle);
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.compact-status-pill.is-draft {
+  background-color: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.compact-status-pill.is-pending {
+  background-color: var(--color-warning-subtle);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.btn-more-row {
+  min-width: 40px;
+  min-height: 40px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Bottom sheet behavior on mobile for detail modals */
+@media (max-width: 767.98px) {
+  .modal-sheet-mobile .modal-dialog {
+    margin: 0;
+    max-width: 100%;
+    min-height: 100%;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .modal-sheet-mobile .modal-content {
+    border-radius: 1.25rem 1.25rem 0 0;
+    max-height: 85dvh;
+    overflow-y: auto;
+    border-bottom: 0;
+  }
+}

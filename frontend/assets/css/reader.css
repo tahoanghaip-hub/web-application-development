@@ -1,0 +1,229 @@
+/**
+ * NOVELSTUDIO - READER PAGE STYLESHEET
+ * Trang đọc truyện công khai responsive: cột đọc 65-75ch trên PC, 1 cột lề 16-20px trên mobile.
+ */
+
+.reader-topbar {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  padding: 0.65rem 0;
+}
+
+.reader-topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.reader-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.reader-topbar-title {
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.reader-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.reader-topbar .btn-sm {
+  min-height: 40px;
+  padding: 0.35rem 0.7rem;
+  white-space: nowrap;
+}
+
+.reader-main {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.reader-shell {
+  display: flex;
+  flex: 1 0 auto;
+  align-items: stretch;
+  min-width: 0;
+}
+
+/* TOC panel: offcanvas bottom sheet on mobile, collapsible sticky sidebar on >=992px */
+.reader-toc-panel {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.reader-toc-panel .offcanvas-header {
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.9rem 1rem;
+}
+
+.reader-toc-panel .offcanvas-body {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.reader-toc-novel-meta {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-elevated);
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 991.98px) {
+  .reader-toc-panel.offcanvas-lg.offcanvas-bottom {
+    height: auto;
+    max-height: 75dvh;
+    border-radius: 1.25rem 1.25rem 0 0;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+@media (min-width: 992px) {
+  .reader-toc-panel.offcanvas-lg {
+    width: 300px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-color);
+    position: sticky;
+    top: 61px;
+    height: calc(100vh - 61px);
+    overflow-y: auto;
+    transition: width 0.2s ease, opacity 0.2s ease;
+  }
+
+  .reader-shell.toc-collapsed .reader-toc-panel.offcanvas-lg {
+    width: 0;
+    min-width: 0;
+    border-right-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* Reading column */
+.reader-article-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1.25rem 18px 3rem;
+}
+
+@media (min-width: 992px) {
+  .reader-article-wrap {
+    padding: 2.25rem 2.5rem 4rem;
+  }
+}
+
+.reader-article {
+  width: 100%;
+  max-width: 70ch;
+  margin-inline: auto;
+}
+
+.reader-novel-header {
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.reader-novel-kicker {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  margin-bottom: 0.35rem;
+  word-break: break-word;
+}
+
+.reader-chapter-title {
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  font-weight: 800;
+  line-height: 1.28;
+  margin-bottom: 0.65rem;
+  word-break: break-word;
+}
+
+.reader-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.reader-content-body {
+  font-size: 1.075rem;
+  line-height: 1.85;
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  margin-bottom: 2.5rem;
+}
+
+.reader-chapter-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.reader-chapter-nav .btn {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  flex: 1 1 auto;
+}
+
+@media (min-width: 576px) {
+  .reader-chapter-nav .btn {
+    flex: 0 1 auto;
+    min-width: 140px;
+  }
+}
+
+.reader-chapter-nav .btn.disabled,
+.reader-chapter-nav .btn[aria-disabled="true"] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.reader-state-card {
+  max-width: 60ch;
+  margin: 2rem auto;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 2rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 420px) {
+  .reader-topbar .btn-text-hide-xs {
+    display: none;
+  }
+}

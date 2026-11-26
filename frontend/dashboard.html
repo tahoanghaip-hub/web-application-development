@@ -217,32 +217,44 @@
           </div>
         </div>
 
-        <!-- Table Responsive -->
-        <div class="table-responsive">
-          <table class="table novel-table table-hover align-middle">
-            <thead>
-              <tr>
-                <th style="width: 5%;">#</th>
-                <th style="width: 25%;">Tên Tác Phẩm</th>
-                <th style="width: 30%;">Tóm Tắt Cốt Truyện</th>
-                <th style="width: 12%;">Hạn Chót</th>
-                <th style="width: 10%;">Ưu Tiên</th>
-                <th style="width: 10%;">Trạng Thái</th>
-                <th style="width: 8%;" class="text-end">Thao Tác</th>
-              </tr>
-            </thead>
-            <tbody id="novel-table-body">
-              <!-- Render động qua dashboardController.js -->
-              <tr>
-                <td colspan="7" class="text-center py-5">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Đang nạp dữ liệu...</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- Table Responsive (PC / Tablet >= 768px) -->
+        <div class="d-none d-md-block">
+          <div class="table-responsive">
+            <table class="table novel-table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th style="width: 5%;">#</th>
+                  <th style="width: 24%;">Tên Tác Phẩm</th>
+                  <th style="width: 26%;">Tóm Tắt Cốt Truyện</th>
+                  <th style="width: 12%;">Hạn Chót</th>
+                  <th style="width: 10%;">Ưu Tiên</th>
+                  <th style="width: 10%;">Trạng Thái</th>
+                  <th style="width: 13%;" class="text-end">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="novel-table-body">
+                <!-- Render động qua dashboardController.js -->
+                <tr>
+                  <td colspan="7" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Đang nạp dữ liệu...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+
+        <!-- Mobile Compact List (< 768px) -->
+        <div id="novel-mobile-list" class="d-md-none compact-row-list">
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Đang nạp dữ liệu...</span>
+            </div>
+          </div>
+        </div>
+
         <nav class="d-flex justify-content-end align-items-center gap-3 p-3" aria-label="Trang tác phẩm">
           <button id="prev-page" class="btn btn-outline-novel btn-sm">Trước</button>
           <span id="page-info" aria-live="polite"></span>
@@ -250,96 +262,48 @@
         </nav>
       </section>
 
-      <!-- ========================================================
-           KHU VỰC 3: KHÔNG GIAN BIÊN TẬP 2 CỘT & VERSION CONTROL
-           ======================================================== -->
-      <section id="workspace-section" class="workspace-wrapper d-none animate-fade-in">
-        <div class="workspace-header">
-          <div>
-            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-              <span class="badge bg-primary-subtle text-primary fw-bold">
-                <i class="fa-solid fa-laptop-code me-1"></i> KHÔNG GIAN BIÊN TẬP
-              </span>
-              <span id="active-novel-title" class="active-novel-badge">Đang mở: Tên Tác Phẩm</span>
-            </div>
-            <small class="text-secondary">Soạn thảo chương mục và kiểm soát lịch sử các phiên bản nháp (Git-like
-              Commits)</small>
-          </div>
-          <div class="d-flex gap-2">
-            <button id="close-workspace-btn" class="btn btn-outline-novel btn-sm" type="button">
-              <i class="fa-solid fa-xmark me-1"></i> Đóng Không Gian
-            </button>
-          </div>
-        </div>
-
-        <div class="row g-4">
-          <!-- Cột Trái: Trình Soạn Thảo (Draft Editor) -->
-          <div class="col-lg-7">
-            <div class="editor-pane">
-              <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 380px;">
-                  <label for="chapter-select"
-                    class="form-label small fw-bold text-secondary mb-0 text-nowrap">CHƯƠNG:</label>
-                  <select id="chapter-select" class="form-select form-select-sm">
-                    <!-- Render danh sách chương -->
-                  </select>
-                </div>
-                <button id="new-chapter-btn" class="btn btn-primary-novel btn-sm" type="button">
-                  <i class="fa-solid fa-folder-plus me-1"></i> + Thêm Chương
-                </button>
-              </div>
-
-              <div class="d-flex gap-2 flex-wrap mb-2">
-                <button id="rename-chapter" class="btn btn-outline-novel btn-sm">Đổi tên chương</button>
-                <button id="delete-chapter" class="btn btn-outline-novel btn-sm">Xóa chương</button>
-                <button id="unpublish" class="btn btn-outline-novel btn-sm">Gỡ chương công khai</button>
-              </div>
-              <p id="save-status" class="small text-secondary" role="status"></p>
-              <!-- Textarea soạn thảo bản thảo -->
-              <label for="draft-editor-textarea" class="visually-hidden">Nội dung bản thảo</label>
-              <textarea id="draft-editor-textarea" class="form-control draft-textarea"
-                placeholder="Bắt đầu viết những dòng văn đầu tiên của bạn tại đây..."></textarea>
-
-              <!-- Commit Message & Nút Lưu Phiên Bản -->
-              <div class="mt-auto pt-3 border-top" style="border-color: var(--border-color) !important;">
-                <div class="row g-2 align-items-center">
-                  <div class="col-sm-8">
-                    <label for="commit-message-input" class="visually-hidden">Ghi chú commit</label>
-                    <input type="text" id="commit-message-input" class="form-control form-control-sm"
-                      placeholder="Ghi chú phiên bản (vd: Phác thảo cảnh hành động cao trào...)">
-                  </div>
-                  <div class="col-sm-4 text-sm-end">
-                    <button id="save-version-btn" class="btn btn-primary-novel btn-sm w-100" type="button">
-                      <i class="fa-solid fa-code-commit me-1"></i> Lưu Phiên Bản
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cột Phải: Lịch Sử Phiên Bản (Version Timeline) -->
-          <div class="col-lg-5">
-            <div class="timeline-pane">
-              <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom"
-                style="border-color: var(--border-color) !important;">
-                <span class="fw-bold small text-secondary">
-                  <i class="fa-solid fa-timeline text-primary me-1"></i> LỊCH SỬ PHIÊN BẢN (COMMITS)
-                </span>
-                <span class="badge bg-secondary-subtle text-secondary" id="version-count-badge">0 bản</span>
-              </div>
-
-              <!-- Danh sách Timeline -->
-              <div id="version-timeline-list" class="timeline-list">
-                <!-- Render động qua dashboardController.js -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
     </div>
   </main>
+
+  <!-- ==========================================
+       MODAL CHI TIẾT TÁC PHẨM TRÊN MOBILE (⋯)
+       ========================================== -->
+  <div class="modal fade modal-sheet-mobile" id="novel-detail-modal" tabindex="-1"
+    aria-labelledby="novelDetailTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold text-break" id="novelDetailTitle">Chi tiết tác phẩm</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div id="detail-novel-badges" class="d-flex flex-wrap gap-2 mb-3"></div>
+          <dl class="row small g-2 mb-3">
+            <dt class="col-4 text-secondary">Số chương</dt>
+            <dd class="col-8 mb-0" id="detail-novel-chapters">0</dd>
+            <dt class="col-4 text-secondary">Hạn chót</dt>
+            <dd class="col-8 mb-0" id="detail-novel-deadline">—</dd>
+          </dl>
+          <div class="small text-secondary fw-semibold mb-1">Tóm tắt cốt truyện</div>
+          <p id="detail-novel-description" class="small mb-0 text-break"></p>
+        </div>
+        <div class="modal-footer flex-column align-items-stretch gap-2">
+          <a id="detail-novel-write" href="#" class="btn btn-primary-novel">
+            <i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Soạn thảo
+          </a>
+          <button id="detail-novel-edit" type="button" class="btn btn-outline-novel">
+            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Sửa thông tin tác phẩm
+          </button>
+          <button id="detail-novel-toggle" type="button" class="btn btn-outline-novel">
+            <i class="fa-solid fa-repeat" aria-hidden="true"></i> Đổi trạng thái
+          </button>
+          <button id="detail-novel-delete" type="button" class="btn btn-outline-novel text-danger">
+            <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Xóa tác phẩm
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- ==========================================
        MODAL THÊM / CHỈNH SỬA TÁC PHẨM

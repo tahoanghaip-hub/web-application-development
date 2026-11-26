@@ -177,6 +177,7 @@ on($('login-form'), 'submit', async event => {
       showAccount(user);
       $('login-password').value = '';
       bootstrap.Modal.getInstance($('login-modal'))?.hide();
+      window.dispatchEvent(new CustomEvent('session-restored', { detail: user }));
       notify('Đã đăng nhập lại. Bạn có thể thử lưu.');
     } else location.reload();
   } catch (error) {

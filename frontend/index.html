@@ -154,52 +154,6 @@
   </main>
 
   <!-- ==========================================
-       READER MODAL (ĐỌC THỬ TÁC PHẨM)
-       ========================================== -->
-  <div class="modal fade" id="reader-modal" tabindex="-1" aria-labelledby="readerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div>
-            <h5 class="modal-title fw-bold" id="readerModalLabel">
-              <i class="fa-solid fa-book-open text-primary me-2"></i>
-              <span id="reader-novel-title">Tên Tác Phẩm</span>
-            </h5>
-            <small class="text-secondary" id="reader-novel-meta">Tác giả • Trạng thái</small>
-          </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
-        </div>
-
-        <div class="modal-body p-4">
-          <!-- Chapter Selector -->
-          <div class="mb-4">
-            <label for="reader-chapter-select" class="form-label fw-semibold small text-secondary">CHỌN CHƯƠNG ĐỌC
-              THỬ:</label>
-            <select id="reader-chapter-select" class="form-select">
-              <!-- Render động -->
-            </select>
-          </div>
-
-          <!-- Reader Content Paper -->
-          <div class="reader-paper p-4 rounded-3"
-            style="background-color: var(--bg-elevated); border: 1px solid var(--border-color); min-height: 250px;">
-            <div id="reader-content-body" style="font-size: 1.05rem; line-height: 1.8; white-space: pre-wrap;">
-              <!-- Nội dung bản thảo hiển thị ở đây -->
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <span class="text-secondary small me-auto" id="reader-version-info">
-            <i class="fa-solid fa-code-commit text-primary me-1"></i> Phiên bản công khai
-          </span>
-          <button type="button" class="btn btn-outline-novel" data-bs-dismiss="modal">Đóng</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==========================================
        LOGIN / SWITCH USER MODAL
        ========================================== -->
   <div class="modal fade" id="login-modal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
