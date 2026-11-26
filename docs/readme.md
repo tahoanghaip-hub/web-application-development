@@ -1,4 +1,6 @@
 # NOVELSTUDIO — NỀN TẢNG QUẢN LÝ SÁNG TÁC TIỂU THUYẾT CÁ NHÂN
+
+> Tài liệu lịch sử của bản frontend dùng localStorage. Hướng dẫn đang áp dụng nằm trong [README hiện hành](../README.md) và [thiết kế full-stack](full-stack.md).
 > **Dự án Nâng cấp Sáng tạo từ Bài toán "Task Manager"**  
 > **Môn học:** Phát triển Ứng dụng Web (Web Application Development)  
 > **Xếp loại mục tiêu:** Xuất sắc (100/100 Điểm Chuẩn + 10 Điểm Thưởng Bonus)

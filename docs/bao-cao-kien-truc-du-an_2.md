@@ -1,4 +1,6 @@
 # BÁO CÁO KIẾN TRÚC HỆ THỐNG DỰ ÁN NOVELSTUDIO
+
+> Tài liệu lịch sử của bản frontend dùng localStorage. Hướng dẫn đang áp dụng nằm trong [README hiện hành](../README.md) và [thiết kế full-stack](full-stack.md).
 ## NỀN TẢNG QUẢN LÝ SÁNG TÁC TIỂU THUYẾT & THEO DÕI TIẾN ĐỘ
 **Phiên bản:** 2.0.0 (Production Architecture)  
 **Tác giả:** Principal Frontend Architect  

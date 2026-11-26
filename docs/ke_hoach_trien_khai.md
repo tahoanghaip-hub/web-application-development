@@ -1,4 +1,6 @@
 # KẾ HOẠCH TRIỂN KHAI DỰ ÁN & BẢNG ÁNH XẠ RUBRIC CHẤM ĐIỂM
+
+> Tài liệu lịch sử của bản frontend dùng localStorage. Hướng dẫn đang áp dụng nằm trong [README hiện hành](../README.md) và [thiết kế full-stack](full-stack.md).
 ## DỰ ÁN: NOVELSTUDIO (CREATIVE TASK MANAGER)
 **Môn học:** Phát triển Ứng dụng Web  
 **Mục tiêu:** 100/100 điểm chuẩn + 10 điểm thưởng sáng tạo (Total: 110/100)  

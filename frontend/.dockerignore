@@ -1,0 +1,16 @@
+*
+!*.html
+!assets/
+!assets/css/
+!assets/css/*.css
+!assets/js/
+!assets/js/*.js
+!assets/js/core/
+!assets/js/core/*.js
+!assets/js/controllers/
+!assets/js/controllers/*.js
+!assets/js/services/
+!assets/js/services/*.js
+!package.json
+!package-lock.json
+!build-vendor.mjs

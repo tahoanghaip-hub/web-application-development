@@ -1,4 +1,6 @@
 # BÁO CÁO PHÂN TÍCH API NỘI BỘ & CƠ CHẾ BẮT LỖI
+
+> Tài liệu lịch sử của bản frontend dùng localStorage. Hướng dẫn đang áp dụng nằm trong [README hiện hành](../README.md) và [thiết kế full-stack](full-stack.md).
 ## DỰ ÁN: NOVELSTUDIO (CREATIVE TASK MANAGER)
 **Tác giả:** Principal Frontend Architect  
 **Phiên bản tài liệu:** 1.0.0  

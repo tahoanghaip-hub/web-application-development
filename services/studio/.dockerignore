@@ -1,0 +1,9 @@
+*
+!requirements.txt
+!alembic.ini
+!app/
+!app/*.py
+!migrations/
+!migrations/*.py
+!migrations/versions/
+!migrations/versions/*.py

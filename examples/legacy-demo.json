@@ -1,0 +1,16 @@
+[
+  {
+    "id": "demo-novel",
+    "title": "Thư viện ven hồ",
+    "description": "Một câu chuyện giả lập dùng để thử nhập dữ liệu cũ.",
+    "deadline": "2026-01-30", "priority": "Medium", "status": "Done",
+    "createdAt": "2025-12-10T08:00:00+07:00",
+    "chapters": [{
+      "chapterId": "demo-chapter", "chapterTitle": "Buổi sớm", "status": "Published",
+      "versions": [
+        {"versionId":"demo-v2","content":"Gió làm rung tấm biển thư viện.\nCửa vừa mở.","commitMessage":"Thêm câu thứ hai","timestamp":"2025-12-12T08:00:00+07:00"},
+        {"versionId":"demo-v1","content":"Gió làm rung tấm biển thư viện.","commitMessage":"Bản đầu","timestamp":"2025-12-11T08:00:00+07:00"}
+      ]
+    }]
+  }
+]

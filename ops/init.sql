@@ -1,0 +1,10 @@
+\getenv identity_password IDENTITY_DB_PASSWORD
+\getenv studio_password STUDIO_DB_PASSWORD
+CREATE ROLE identity_app LOGIN PASSWORD :'identity_password';
+CREATE ROLE studio_app LOGIN PASSWORD :'studio_password';
+CREATE DATABASE identity OWNER identity_app;
+CREATE DATABASE studio OWNER studio_app;
+REVOKE CONNECT ON DATABASE identity FROM PUBLIC;
+REVOKE CONNECT ON DATABASE studio FROM PUBLIC;
+REVOKE CONNECT ON DATABASE postgres FROM PUBLIC;
+REVOKE CONNECT ON DATABASE template1 FROM PUBLIC;
