@@ -48,5 +48,11 @@ export function validateNovelData(data) {
     errors.status = 'Trạng thái tác phẩm phải là Pending hoặc Done.';
   }
 
+  // 6. Kiểm tra Quyền riêng tư
+  const validVisibility = ['Private', 'Public'];
+  if (data.visibility && !validVisibility.includes(data.visibility)) {
+    errors.visibility = 'Quyền riêng tư phải là Private hoặc Public.';
+  }
+
   return errors;
 }

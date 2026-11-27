@@ -134,8 +134,8 @@
     <div class="container">
       <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
         <div>
-          <h2 class="h3 fw-bold mb-1">Tác phẩm đã xuất bản</h2>
-          <p class="text-secondary small mb-0">Đọc những chương tác giả đã chọn chia sẻ.</p>
+          <h2 id="discover-heading" class="h3 fw-bold mb-1">Gợi ý khám phá</h2>
+          <p id="discover-subtitle" class="text-secondary small mb-0">Đang tải danh sách tác phẩm công khai...</p>
         </div>
         <button id="create-novel-btn" type="button" class="btn btn-primary-novel btn-sm">
           <i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Tạo tác phẩm
@@ -150,6 +150,12 @@
             <span class="visually-hidden">Đang tải tác phẩm...</span>
           </div>
         </div>
+      </div>
+
+      <div id="home-load-more-wrap" class="text-center mt-4" hidden>
+        <button id="home-load-more-btn" type="button" class="btn btn-outline-novel">
+          <i class="fa-solid fa-angles-down me-1" aria-hidden="true"></i> Xem thêm
+        </button>
       </div>
     </div>
   </main>

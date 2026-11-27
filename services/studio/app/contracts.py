@@ -14,6 +14,7 @@ class NovelData(BaseModel):
     deadline: date
     priority: Literal["Low", "Medium", "High"]
     status: Literal["Pending", "Done"] = "Pending"
+    visibility: Literal["Private", "Public"] | None = None
 
 
 class ChapterData(BaseModel):
@@ -24,6 +25,12 @@ class Draft(BaseModel):
     requestId: UUID | None = None
     content: str = Field(min_length=1)
     commitMessage: str = ""
+
+
+class CommentCreate(BaseModel):
+    content: str = Field(min_length=1, max_length=2000)
+    parentId: int | None = None
+    requestId: UUID | None = None
 
 
 class SavedVersion(BaseModel):

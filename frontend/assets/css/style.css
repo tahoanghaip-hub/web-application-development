@@ -498,6 +498,25 @@ body {
   border: 1px solid rgba(245, 158, 11, 0.3);
 }
 
+.compact-status-pill.is-hidden-by-novel {
+  background-color: var(--color-warning-subtle);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Visibility Badges */
+.badge-visibility-public {
+  background-color: var(--color-success-subtle);
+  color: var(--color-success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badge-visibility-private {
+  background-color: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
 .btn-more-row {
   min-width: 40px;
   min-height: 40px;

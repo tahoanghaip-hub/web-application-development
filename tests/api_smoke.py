@@ -145,8 +145,9 @@ def run():
     assert b.studio("/export") == [] and b.studio("/statistics")["total"] == 0
     a.studio(vp + "/publish", "PUT", expect=403, csrf=False)
     a.studio(vp + "/publish", "PUT")
+    assert all(x["id"] != nid for x in guest.studio("/public"))
+    a.studio(path, "PUT", data | {"visibility": "Public"})
     a.studio(chapter + "/versions", "POST", {"content": "Bản nháp mới"}, 201)
-    a.studio(path, "PUT", data | {"description": "Mô tả chưa xuất bản"})
     hidden_chapter = a.studio(path + "/chapters", "POST", {"chapterTitle": "Chương riêng"}, 201)
     public = next(x for x in guest.studio("/public") if x["id"] == nid)
     for reader in (a, b):
@@ -154,6 +155,7 @@ def run():
     assert [c["chapterId"] for c in public["chapters"]] == [cid]
     a.studio(path + "/chapters/" + hidden_chapter["chapterId"], "DELETE")
     assert public["description"] == data["description"]
+    assert "deadline" not in public and "priority" not in public and "owner_id" not in public
     visible = public["chapters"][0]["versions"]
     assert len(visible) == 1 and visible[0]["content"] == "Công khai" and "commitMessage" not in visible[0]
     restored = a.studio(vp + "/restore", "POST", expect=201)
@@ -192,6 +194,10 @@ def run():
     assert datetime.fromisoformat(backup[0]["createdAt"]) == datetime.fromisoformat(exported[0]["createdAt"])
     assert all(x["id"] != exported[0]["id"] for x in guest.studio("/public"))
     a.studio(chapter + "/publication", "DELETE")
+    pub_empty = next(x for x in guest.studio("/public") if x["id"] == nid)
+    assert pub_empty["chapters"] == []
+    guest.studio(f"/public/novels/{nid}/chapters/{cid}", expect=404)
+    a.studio(path, "PUT", data | {"visibility": "Private"})
     assert all(x["id"] != nid for x in guest.studio("/public"))
     a.studio(chapter, "DELETE")
     a.studio(path, "DELETE")

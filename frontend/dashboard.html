@@ -368,6 +368,23 @@
               </div>
             </div>
 
+            <!-- Quyền riêng tư -->
+            <div class="mb-3">
+              <label for="novel-visibility" class="form-label fw-semibold">Quyền Riêng Tư</label>
+              <select id="novel-visibility" class="form-select">
+                <option value="Private" selected>Riêng tư — Chỉ mình bạn thấy trong Trạm Sáng Tác</option>
+                <option value="Public">Công khai — Hiển thị trên Khám phá cho mọi người</option>
+              </select>
+              <div id="novel-visibility-disclosure" class="alert alert-secondary py-2 px-3 small mt-2 mb-0">
+                <div class="fw-semibold mb-1"><i class="fa-solid fa-shield-halved me-1"></i>Thông tin người đọc sẽ thấy khi Công khai:</div>
+                <ul class="mb-1 ps-3">
+                  <li><strong>Công khai:</strong> Tên tác phẩm, Tóm tắt cốt truyện, Trạng thái (Đang sáng tác / Hoàn thành) và các chương bạn đã chọn xuất bản.</li>
+                  <li><strong>Luôn giữ riêng tư:</strong> Hạn chót (Deadline), Mức ưu tiên, bản nháp chưa xuất bản, lịch sử phiên bản và ghi chú phiên bản.</li>
+                </ul>
+              </div>
+              <div id="novel-visibility-impact" class="alert alert-warning py-2 px-3 small mt-2 mb-0" hidden role="status"></div>
+            </div>
+
             <!-- Mô tả cốt truyện -->
             <div class="mb-2">
               <div class="d-flex justify-content-between align-items-center mb-1">

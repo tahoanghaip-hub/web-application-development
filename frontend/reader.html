@@ -123,6 +123,24 @@
 
       <!-- Reading Column -->
       <div class="reader-article-wrap">
+        <!-- Empty Published Chapters State (Public Novel with 0 Published Chapters) -->
+        <div id="reader-empty-chapters" hidden>
+          <div class="reader-state-card">
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+              <span id="reader-empty-status" class="badge badge-novel badge-pending">Đang sáng tác</span>
+            </div>
+            <h1 id="reader-empty-title" class="h4 fw-bold mb-2 text-break"></h1>
+            <p id="reader-empty-desc" class="text-secondary mb-3 text-break"></p>
+            <div class="alert alert-secondary py-2 px-3 small mb-4">
+              <i class="fa-solid fa-book-open me-1" aria-hidden="true"></i>
+              Chưa có chương công khai
+            </div>
+            <a href="index.html" class="btn btn-primary-novel">
+              <i class="fa-solid fa-compass" aria-hidden="true"></i> Quay lại Khám phá
+            </a>
+          </div>
+        </div>
+
         <!-- Chapter Unavailable State -->
         <div id="reader-chapter-unavailable" hidden>
           <div class="reader-state-card">
@@ -171,6 +189,63 @@
               Chương sau <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
             </a>
           </nav>
+
+          <!-- Chapter Comments Section -->
+          <section id="reader-comments-section" class="reader-comments" aria-labelledby="comments-heading" hidden>
+            <div class="reader-comments-header">
+              <h2 id="comments-heading" class="h5 fw-bold mb-0">
+                <i class="fa-regular fa-comments text-primary me-2" aria-hidden="true"></i>Bình luận
+              </h2>
+              <span id="comments-count-badge" class="badge bg-primary-subtle text-primary rounded-pill">0</span>
+            </div>
+
+            <div id="comments-guest-prompt" class="comments-auth-box" hidden>
+              <p class="small text-secondary mb-2 mb-sm-0">Đăng nhập để gửi bình luận và trả lời thảo luận của chương này.</p>
+              <button id="comments-login-btn" type="button" class="btn btn-primary-novel btn-sm"
+                data-bs-toggle="modal" data-bs-target="#login-modal">
+                <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i> Đăng nhập để bình luận
+              </button>
+            </div>
+
+            <form id="comment-form" class="comment-composer" hidden novalidate>
+              <label for="comment-input" class="form-label small fw-semibold mb-1">Viết bình luận của bạn</label>
+              <textarea id="comment-input" class="form-control comment-textarea" rows="3" maxlength="1000"
+                placeholder="Chia sẻ cảm nhận về chương này (tối đa 1000 ký tự)..."></textarea>
+              <div class="comment-composer-foot">
+                <small id="comment-char-count" class="text-secondary">0 / 1000 ký tự</small>
+                <button id="comment-submit-btn" type="submit" class="btn btn-primary-novel btn-sm">
+                  <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Gửi bình luận
+                </button>
+              </div>
+              <div id="comment-submit-error" class="small text-danger mt-2" hidden role="alert"></div>
+            </form>
+
+            <div id="comments-loading" class="text-center py-4" hidden>
+              <div class="spinner-border spinner-border-sm text-primary" role="status">
+                <span class="visually-hidden">Đang tải bình luận...</span>
+              </div>
+              <span class="small text-secondary ms-2">Đang tải bình luận...</span>
+            </div>
+
+            <div id="comments-error" class="comments-state-box" hidden role="alert">
+              <p class="small text-danger mb-2">Không tải được bình luận. Vui lòng thử lại.</p>
+              <button id="comments-retry-btn" type="button" class="btn btn-outline-novel btn-sm">
+                <i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Thử lại
+              </button>
+            </div>
+
+            <div id="comments-empty" class="comments-state-box" hidden>
+              <p class="small text-secondary mb-0">Chưa có bình luận nào cho chương này. Hãy là người đầu tiên chia sẻ cảm nhận.</p>
+            </div>
+
+            <div id="comments-list" class="comments-list"></div>
+
+            <div id="comments-load-more-wrap" class="text-center mt-3" hidden>
+              <button id="comments-load-more-btn" type="button" class="btn btn-outline-novel btn-sm">
+                Xem thêm bình luận
+              </button>
+            </div>
+          </section>
         </article>
       </div>
     </div>

@@ -71,6 +71,10 @@ let previousId = null;
 let loginForCreation = false;
 const createDestination = 'dashboard.html#create-novel';
 
+export function getAccount() {
+  return account;
+}
+
 function showAccount(user) {
   if (user || account) authScreen(user ? null : 'login');
   account = user;

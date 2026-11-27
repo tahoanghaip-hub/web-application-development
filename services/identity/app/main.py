@@ -39,6 +39,10 @@ class Profile(BaseModel):
     displayName: DisplayName
 
 
+class DisplayNameLookup(BaseModel):
+    ids: list[str] = Field(max_length=200)
+
+
 @app.exception_handler(OperationalError)
 async def database_unavailable(request, error):
     return JSONResponse({"detail": "Cơ sở dữ liệu tạm thời chưa sẵn sàng."}, status_code=503)
@@ -142,6 +146,15 @@ def logout(request: Request, response: Response, db: DB):
 @app.get(PREFIX + "/me")
 def profile(user: User):
     return user
+
+
+@app.post("/internal/display-names")
+def internal_display_names(data: DisplayNameLookup, db: DB):
+    clean_ids = [uid for uid in dict.fromkeys(data.ids) if uid]
+    if not clean_ids:
+        return {}
+    rows = db.execute(select(users.c.id, users.c.display_name).where(users.c.id.in_(clean_ids))).all()
+    return {uid: name for uid, name in rows}
 
 
 @app.patch(PREFIX + "/me")

@@ -30,6 +30,17 @@ function getStatusInfo(status) {
   };
 }
 
+function getVisibilityInfo(visibility) {
+  const isPublic = visibility === 'Public';
+  return {
+    isPublic,
+    cls: isPublic ? 'badge-visibility-public' : 'badge-visibility-private',
+    pillCls: isPublic ? 'is-published' : 'is-draft',
+    label: isPublic ? 'Công khai' : 'Riêng tư',
+    icon: isPublic ? 'fa-globe' : 'fa-lock'
+  };
+}
+
 function renderEmptyMarkup() {
   return `
     <div class="empty-state">
@@ -66,14 +77,16 @@ function renderTableRows(novels) {
         : 'Chưa đặt';
       const prio = getPriorityInfo(novel.priority);
       const stat = getStatusInfo(novel.status);
+      const vis = getVisibilityInfo(novel.visibility);
       const chaptersCount = novel.chapterCount ?? 0;
+      const pubChaptersCount = novel.publishedChapterCount ?? 0;
 
       return `
         <tr class="animate-fade-in" data-id="${escapeHtml(novel.id)}">
           <td class="text-secondary fw-semibold">${(page - 1) * pageSize + index + 1}</td>
           <td>
             <div class="fw-bold text-primary mb-1">${safeTitle}</div>
-            <small class="text-secondary"><i class="fa-solid fa-layer-group me-1"></i>${chaptersCount} chương mục</small>
+            <small class="text-secondary"><i class="fa-solid fa-layer-group me-1"></i>${chaptersCount} chương mục${pubChaptersCount > 0 ? ` · ${pubChaptersCount} đã xuất bản` : ''}</small>
           </td>
           <td>
             <div class="text-secondary small text-truncate" style="max-width: 300px;" title="${safeDesc}">
@@ -87,11 +100,17 @@ function renderTableRows(novels) {
             <span class="badge badge-novel ${prio.cls}">${prio.label}</span>
           </td>
           <td>
-            <button type="button" class="btn btn-sm badge-novel ${stat.cls} border-0 cursor-pointer btn-toggle-status"
-              data-id="${escapeHtml(novel.id)}" title="Bấm để đổi trạng thái">
-              <i class="fa-solid ${stat.icon} me-1"></i>
-              ${stat.label}
-            </button>
+            <div class="d-flex flex-column align-items-start gap-1">
+              <button type="button" class="btn btn-sm badge-novel ${stat.cls} border-0 cursor-pointer btn-toggle-status"
+                data-id="${escapeHtml(novel.id)}" title="Bấm để đổi trạng thái">
+                <i class="fa-solid ${stat.icon} me-1"></i>
+                ${stat.label}
+              </button>
+              <span class="badge badge-novel ${vis.cls}" data-visibility="${escapeHtml(novel.visibility || 'Private')}">
+                <i class="fa-solid ${vis.icon}"></i>
+                ${vis.label}
+              </span>
+            </div>
           </td>
           <td class="text-end">
             <div class="action-btn-group">
@@ -124,6 +143,7 @@ function renderTableRows(novels) {
     mobileList.innerHTML = novels.map((novel) => {
       const safeTitle = escapeHtml(novel.title);
       const stat = getStatusInfo(novel.status);
+      const vis = getVisibilityInfo(novel.visibility);
       const chaptersCount = novel.chapterCount ?? 0;
 
       return `
@@ -131,9 +151,10 @@ function renderTableRows(novels) {
           <a class="compact-row-main" href="${editorHref(novel.id)}" aria-label="Mở soạn thảo ${safeTitle}">
             <span class="compact-row-text">
               <span class="compact-row-title">${safeTitle}</span>
-              <span class="compact-row-sub">
+              <span class="compact-row-sub flex-wrap">
                 <span>${chaptersCount} chương</span>
                 <span class="compact-status-pill ${stat.isDone ? 'is-published' : 'is-pending'}">${stat.shortLabel}</span>
+                <span class="compact-status-pill ${vis.pillCls}">${vis.label}</span>
               </span>
             </span>
           </a>
@@ -184,7 +205,46 @@ function setupModalFormValidation() {
   if (titleInput) titleInput.addEventListener('input', () => validateField('title'));
   if (deadlineInput) deadlineInput.addEventListener('change', () => validateField('deadline'));
   if (descInput) descInput.addEventListener('input', () => validateField('description'));
+  const visibilitySelect = $('novel-visibility');
+  if (visibilitySelect) visibilitySelect.addEventListener('change', updateVisibilityImpact);
   if (novelForm) on(novelForm, 'submit', handleFormSubmit);
+}
+
+function updateVisibilityImpact() {
+  const impactEl = $('novel-visibility-impact');
+  const selectEl = $('novel-visibility');
+  if (!impactEl || !selectEl) return;
+  const targetVis = selectEl.value || 'Private';
+  const novelId = $('novel-id')?.value || '';
+  const novel = novelId ? items.find(book => book.id === novelId) : null;
+
+  if (!novel) {
+    if (targetVis === 'Public') {
+      impactEl.textContent = 'Tác phẩm mới sẽ hiển thị trên Khám phá với trạng thái "Chưa có chương công khai" cho đến khi bạn xuất bản chương.';
+      impactEl.hidden = false;
+    } else {
+      impactEl.hidden = true;
+      impactEl.textContent = '';
+    }
+    return;
+  }
+
+  const prevVis = novel.visibility || 'Private';
+  const pubCount = novel.publishedChapterCount ?? 0;
+  if (prevVis === 'Private' && targetVis === 'Public') {
+    if (pubCount > 0) {
+      impactEl.textContent = `Khi công khai lại, ${pubCount} chương đã chọn xuất bản trước đó sẽ hiện lại cho người đọc. Các chương đang để riêng tư vẫn tiếp tục ẩn.`;
+    } else {
+      impactEl.textContent = 'Tác phẩm hiện chưa có chương nào xuất bản, nên sẽ hiển thị trên Khám phá với thông báo "Chưa có chương công khai".';
+    }
+    impactEl.hidden = false;
+  } else if (prevVis === 'Public' && targetVis === 'Private') {
+    impactEl.textContent = 'Khi chuyển sang Riêng tư, tác phẩm, mục lục, các chương và bình luận sẽ bị ẩn khỏi người đọc. Lịch sử và phiên bản đã chọn xuất bản vẫn được giữ trong Studio.';
+    impactEl.hidden = false;
+  } else {
+    impactEl.hidden = true;
+    impactEl.textContent = '';
+  }
 }
 
 function validateField(fieldName) {
@@ -211,12 +271,15 @@ function getFormData() {
     deadline: $('novel-deadline')?.value || '',
     priority: $('novel-priority')?.value || 'Medium',
     status: $('novel-status')?.value || 'Pending',
+    visibility: $('novel-visibility')?.value || 'Private',
     description: $('novel-description')?.value || ''
   };
 }
 
 function openAddModal() {
   resetNovelForm();
+  if ($('novel-visibility')) $('novel-visibility').value = 'Private';
+  updateVisibilityImpact();
   const modalTitle = $('novelModalTitle');
   if (modalTitle) {
     modalTitle.innerHTML = '<i class="fa-solid fa-plus-circle text-primary me-2"></i> Thêm Tác Phẩm Mới';
@@ -242,6 +305,8 @@ function openEditModal(novelId) {
   $('novel-deadline').value = novel.deadline || '';
   $('novel-priority').value = novel.priority || 'Medium';
   $('novel-status').value = novel.status || 'Pending';
+  if ($('novel-visibility')) $('novel-visibility').value = novel.visibility || 'Private';
+  updateVisibilityImpact();
   const descInput = $('novel-description');
   const descCounter = $('desc-char-counter');
   descInput.value = novel.description || '';
@@ -271,6 +336,11 @@ function resetNovelForm() {
   if (descCounter) {
     descCounter.textContent = '0 / 10 ký tự';
     descCounter.className = 'text-secondary';
+  }
+  const impactEl = $('novel-visibility-impact');
+  if (impactEl) {
+    impactEl.hidden = true;
+    impactEl.textContent = '';
   }
 }
 
@@ -305,6 +375,18 @@ async function handleFormSubmit(event) {
   const errors = validateNovelData(data);
   for (const field of ['title', 'description', 'priority', 'deadline', 'status']) validateField(field);
   if (Object.keys(errors).length) return;
+
+  if (data.id) {
+    const existing = items.find(book => book.id === data.id);
+    const pubCount = existing?.publishedChapterCount ?? 0;
+    if (existing && (existing.visibility || 'Private') === 'Private' && data.visibility === 'Public' && pubCount > 0) {
+      const ok = await confirmAction(
+        `Công khai tác phẩm này? ${pubCount} chương đã chọn xuất bản trước đó sẽ hiện lại cho người đọc. Các chương đang để riêng tư vẫn tiếp tục ẩn.`
+      );
+      if (!ok) return;
+    }
+  }
+
   const button = $('save-novel-btn');
   button.disabled = true;
   try {
@@ -351,6 +433,7 @@ function openNovelDetailModal(novelId) {
 
   const prio = getPriorityInfo(novel.priority);
   const stat = getStatusInfo(novel.status);
+  const vis = getVisibilityInfo(novel.visibility);
   const deadlineFormatted = novel.deadline
     ? new Date(novel.deadline).toLocaleDateString('vi-VN')
     : 'Chưa đặt';
@@ -358,9 +441,13 @@ function openNovelDetailModal(novelId) {
   $('novelDetailTitle').textContent = novel.title;
   $('detail-novel-badges').innerHTML = `
     <span class="badge badge-novel ${stat.cls}"><i class="fa-solid ${stat.icon}"></i> ${stat.label}</span>
+    <span class="badge badge-novel ${vis.cls}"><i class="fa-solid ${vis.icon}"></i> ${vis.label}</span>
     <span class="badge badge-novel ${prio.cls}"><i class="fa-solid fa-flag"></i> Ưu tiên ${prio.label}</span>
   `;
-  $('detail-novel-chapters').textContent = `${novel.chapterCount ?? 0} chương`;
+  const pubCount = novel.publishedChapterCount ?? 0;
+  $('detail-novel-chapters').textContent = pubCount > 0
+    ? `${novel.chapterCount ?? 0} chương (${pubCount} đã xuất bản)`
+    : `${novel.chapterCount ?? 0} chương`;
   $('detail-novel-deadline').textContent = deadlineFormatted;
   $('detail-novel-description').textContent = novel.description || '';
   $('detail-novel-write').href = editorHref(novel.id);

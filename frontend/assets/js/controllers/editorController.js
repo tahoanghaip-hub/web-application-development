@@ -15,6 +15,7 @@ let saving = false;
 let pendingSave = null;
 let currentUrl = location.href;
 let detailChapterId = null;
+let privacyChapterId = null;
 let handlingPopState = false;
 
 function editorUrl(novelId, chapterId = '') {
@@ -106,6 +107,41 @@ function isChapterPublished(chapter) {
   return Boolean(chapter?.versions?.some(v => v.published));
 }
 
+function chapterPrivacyState(chapter) {
+  const hasPublished = isChapterPublished(chapter);
+  const novelPublic = activeNovel?.visibility === 'Public';
+  if (hasPublished && novelPublic) {
+    return { state: 'public', label: 'Công khai', longLabel: 'Công khai', cls: 'is-published' };
+  }
+  if (hasPublished && !novelPublic) {
+    return {
+      state: 'hidden_by_novel',
+      label: 'Ẩn theo truyện',
+      longLabel: 'Ẩn theo tác phẩm (đã chọn bản xuất bản)',
+      cls: 'is-hidden-by-novel'
+    };
+  }
+  return { state: 'private', label: 'Riêng tư', longLabel: 'Riêng tư', cls: 'is-draft' };
+}
+
+function renderNovelVisibilityBadge() {
+  const badge = $('editor-novel-visibility-badge');
+  if (!badge || !activeNovel) return;
+  const isPublic = activeNovel.visibility === 'Public';
+  badge.className = 'compact-status-pill ' + (isPublic ? 'is-published' : 'is-draft');
+  badge.textContent = isPublic ? 'Tác phẩm Công khai' : 'Tác phẩm Riêng tư';
+  badge.hidden = false;
+}
+
+function renderHiddenBanner() {
+  const banner = $('editor-chapter-hidden-banner');
+  if (!banner) return;
+  const hiddenByNovel = Boolean(
+    activeChapter && activeNovel?.visibility !== 'Public' && isChapterPublished(activeChapter)
+  );
+  banner.hidden = !hiddenByNovel;
+}
+
 function renderChapterList() {
   const listEl = $('chapter-list');
   const chapters = activeNovel?.chapters || [];
@@ -118,7 +154,7 @@ function renderChapterList() {
 
   listEl.innerHTML = chapters.map((chap, idx) => {
     const isActive = activeChapter && String(chap.chapterId) === String(activeChapter.chapterId);
-    const published = isChapterPublished(chap);
+    const privacy = chapterPrivacyState(chap);
     const safeTitle = escapeHtml(chap.chapterTitle);
     const versionCount = Array.isArray(chap.versions) ? chap.versions.length : 0;
 
@@ -136,8 +172,8 @@ function renderChapterList() {
           </span>
         </button>
         <div class="compact-row-actions">
-          <span class="compact-status-pill ${published ? 'is-published' : 'is-draft'}">
-            ${published ? 'Công khai' : 'Nháp'}
+          <span class="compact-status-pill ${privacy.cls}">
+            ${privacy.label}
           </span>
           <button type="button" class="btn btn-outline-novel btn-more-row btn-chapter-more"
             data-chapter-id="${escapeHtml(chap.chapterId)}"
@@ -160,9 +196,11 @@ function renderTimeline() {
 
   const badge = $('active-chapter-status-badge');
   if (activeChapter) {
-    badge.className = 'compact-status-pill ' + (hasPublished ? 'is-published' : 'is-draft');
-    badge.textContent = hasPublished ? 'Đã xuất bản' : 'Bản nháp';
+    const privacy = chapterPrivacyState(activeChapter);
+    badge.className = 'compact-status-pill ' + privacy.cls;
+    badge.textContent = privacy.longLabel;
   }
+  renderHiddenBanner();
 
   $('version-timeline-list').innerHTML = history.map(version => {
     const timeText = new Date(version.timestamp).toLocaleString('vi-VN');
@@ -284,6 +322,7 @@ async function loadNovel({ preferredChapterId = null, historyMode = 'replace' } 
   $('editor-loading').hidden = true;
   $('editor-shell').hidden = false;
   $('editor-novel-title').textContent = activeNovel.title;
+  renderNovelVisibilityBadge();
 
   const chapters = activeNovel.chapters || [];
   if (chapters.length === 0) {
@@ -349,11 +388,14 @@ async function unpublishChapterFlow(chapter) {
   await studio(chapterPath(chapter.chapterId) + '/publication', 'DELETE');
   for (const v of chapter.versions || []) v.published = false;
   chapter.status = 'Draft';
+  chapter.hasPublishedVersion = false;
+  chapter.publishedVersionId = null;
+  chapter.effectivelyPublic = false;
   renderChapterList();
   if (activeChapter && String(activeChapter.chapterId) === String(chapter.chapterId)) {
     renderTimeline();
   }
-  notify('Đã gỡ chương khỏi trang chủ.');
+  notify('Đã gỡ công khai chương.');
 }
 
 async function saveVersion() {
@@ -417,6 +459,7 @@ function openChapterDetailModal(chapterId) {
   if (idx === -1) return;
   const chapter = activeNovel.chapters[idx];
   const published = isChapterPublished(chapter);
+  const privacy = chapterPrivacyState(chapter);
   const versions = Array.isArray(chapter.versions) ? chapter.versions : [];
   const latest = versions[0] || null;
 
@@ -424,9 +467,12 @@ function openChapterDetailModal(chapterId) {
   $('editor-detail-num').textContent = `Chương ${idx + 1} / ${activeNovel.chapters.length}`;
   $('editorChapterDetailTitle').textContent = chapter.chapterTitle;
   $('editor-detail-status-wrap').innerHTML = `
-    <span class="compact-status-pill ${published ? 'is-published' : 'is-draft'}">
-      ${published ? 'Đã xuất bản công khai' : 'Bản nháp riêng tư'}
+    <span class="compact-status-pill ${privacy.cls}">
+      ${privacy.longLabel}
     </span>
+    ${privacy.state === 'hidden_by_novel'
+      ? '<p class="small text-warning mb-0 mt-2">Chương đã chọn phiên bản xuất bản nhưng đang bị ẩn vì tác phẩm ở chế độ Riêng tư.</p>'
+      : ''}
   `;
   $('editor-detail-versions').textContent = `${versions.length} phiên bản`;
   $('editor-detail-updated').textContent = latest?.timestamp
@@ -436,6 +482,75 @@ function openChapterDetailModal(chapterId) {
 
   closeMobileSidebar();
   const modalEl = $('chapter-detail-modal');
+  if (modalEl && window.bootstrap) {
+    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+  }
+}
+
+function syncChapterPrivacyModalState(chapter) {
+  const isPublic = $('chap-vis-public')?.checked;
+  const versions = Array.isArray(chapter?.versions) ? chapter.versions : [];
+  const noVersions = $('chapter-privacy-no-versions');
+  const versionsWrap = $('chapter-privacy-versions-wrap');
+  const saveBtn = $('chapter-privacy-save-btn');
+  if (!isPublic) {
+    noVersions.hidden = true;
+    versionsWrap.hidden = true;
+    saveBtn.disabled = false;
+    return;
+  }
+  if (versions.length === 0) {
+    noVersions.hidden = false;
+    versionsWrap.hidden = true;
+    saveBtn.disabled = true;
+  } else {
+    noVersions.hidden = true;
+    versionsWrap.hidden = false;
+    saveBtn.disabled = false;
+  }
+}
+
+function openChapterPrivacyModal(chapter) {
+  if (!chapter || !activeNovel) return;
+  privacyChapterId = chapter.chapterId;
+  const versions = Array.isArray(chapter.versions) ? chapter.versions : [];
+  const published = isChapterPublished(chapter);
+
+  $('chapter-privacy-subtitle').textContent = chapter.chapterTitle;
+  const novelNote = $('chapter-privacy-novel-note');
+  if (activeNovel.visibility !== 'Public') {
+    novelNote.textContent = 'Tác phẩm đang ở chế độ Riêng tư. Bạn vẫn có thể chọn phiên bản để sẵn sàng xuất bản, nhưng người đọc chỉ xem được khi tác phẩm được chuyển sang Công khai.';
+    novelNote.hidden = false;
+  } else {
+    novelNote.hidden = true;
+    novelNote.textContent = '';
+  }
+
+  $('chap-vis-public').checked = published;
+  $('chap-vis-private').checked = !published;
+
+  const listEl = $('chapter-privacy-versions-list');
+  const preselectedId = versions.find(v => v.published)?.versionId || versions[0]?.versionId || '';
+  listEl.innerHTML = versions.map(v => {
+    const timeText = new Date(v.timestamp).toLocaleString('vi-VN');
+    const checked = String(v.versionId) === String(preselectedId) ? 'checked' : '';
+    return `
+      <label class="d-flex align-items-start gap-2 p-2 rounded-3 border cursor-pointer" style="border-color: var(--border-color) !important;">
+        <input class="form-check-input mt-1 flex-shrink-0" type="radio" name="chapter-privacy-version" value="${escapeHtml(v.versionId)}" ${checked}>
+        <span class="min-w-0 flex-grow-1">
+          <span class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+            <span class="fw-semibold small text-break">${escapeHtml(v.commitMessage)}</span>
+            ${v.published ? '<span class="compact-status-pill is-published">Đang chọn xuất bản</span>' : ''}
+          </span>
+          <span class="d-block text-secondary" style="font-size: 0.75rem;">${escapeHtml(timeText)} · ${v.content.length} ký tự</span>
+        </span>
+      </label>
+    `;
+  }).join('');
+
+  syncChapterPrivacyModalState(chapter);
+  closeMobileSidebar();
+  const modalEl = $('chapter-privacy-modal');
   if (modalEl && window.bootstrap) {
     bootstrap.Modal.getOrCreateInstance(modalEl).show();
   }
@@ -458,6 +573,7 @@ function bindEvents() {
   on($('toggle-history-btn'), 'click', showHistoryOffcanvas);
   on($('new-chapter-btn'), 'click', createChapterFlow);
   on($('empty-new-chapter-btn'), 'click', createChapterFlow);
+  on($('chapter-privacy-btn'), 'click', () => openChapterPrivacyModal(activeChapter));
   on($('rename-chapter'), 'click', () => renameChapterFlow(activeChapter));
   on($('delete-chapter'), 'click', () => deleteChapterFlow(activeChapter));
   on($('unpublish'), 'click', () => unpublishChapterFlow(activeChapter));
@@ -500,6 +616,12 @@ function bindEvents() {
     }
   });
 
+  on($('editor-detail-privacy'), 'click', () => {
+    const chapter = getDetailChapter();
+    hideDetailModal();
+    if (chapter) openChapterPrivacyModal(chapter);
+  });
+
   on($('editor-detail-rename'), 'click', async () => {
     const chapter = getDetailChapter();
     hideDetailModal();
@@ -516,6 +638,54 @@ function bindEvents() {
     const chapter = getDetailChapter();
     hideDetailModal();
     await deleteChapterFlow(chapter);
+  });
+
+  for (const radio of document.querySelectorAll('input[name="chapter-visibility"]')) {
+    on(radio, 'change', () => {
+      const chapter = (activeNovel?.chapters || []).find(c => String(c.chapterId) === String(privacyChapterId));
+      syncChapterPrivacyModalState(chapter);
+    });
+  }
+
+  on($('chapter-privacy-form'), 'submit', async (event) => {
+    event.preventDefault();
+    const chapter = (activeNovel?.chapters || []).find(c => String(c.chapterId) === String(privacyChapterId));
+    if (!chapter) return;
+    const targetPublic = $('chap-vis-public').checked;
+    const modalEl = $('chapter-privacy-modal');
+    const saveBtn = $('chapter-privacy-save-btn');
+    saveBtn.disabled = true;
+    try {
+      if (!targetPublic) {
+        if (isChapterPublished(chapter)) {
+          await unpublishChapterFlow(chapter);
+        }
+        bootstrap.Modal.getInstance(modalEl)?.hide();
+        return;
+      }
+      const selected = document.querySelector('input[name="chapter-privacy-version"]:checked');
+      if (!selected) return;
+      const versionId = selected.value;
+      const path = chapterPath(chapter.chapterId) + '/versions/' + encodeURIComponent(versionId);
+      await studio(path + '/publish', 'PUT');
+      for (const v of chapter.versions || []) v.published = String(v.versionId) === String(versionId);
+      chapter.status = 'Published';
+      chapter.hasPublishedVersion = true;
+      chapter.publishedVersionId = String(versionId);
+      chapter.effectivelyPublic = activeNovel?.visibility === 'Public';
+      bootstrap.Modal.getInstance(modalEl)?.hide();
+      renderChapterList();
+      if (activeChapter && String(activeChapter.chapterId) === String(chapter.chapterId)) {
+        renderTimeline();
+      }
+      notify(
+        activeNovel?.visibility === 'Public'
+          ? 'Đã công khai chương.'
+          : 'Đã chọn phiên bản xuất bản (chương sẽ hiển thị khi tác phẩm Công khai).'
+      );
+    } finally {
+      syncChapterPrivacyModalState(chapter);
+    }
   });
 
   const editor = $('draft-editor-textarea');
@@ -558,7 +728,10 @@ function bindEvents() {
       await studio(path + '/publish', 'PUT');
       for (const v of chapter.versions) v.published = String(v.versionId) === String(versionId);
       chapter.status = 'Published';
-      notify('Đã xuất bản.');
+      chapter.hasPublishedVersion = true;
+      chapter.publishedVersionId = String(versionId);
+      chapter.effectivelyPublic = activeNovel?.visibility === 'Public';
+      notify(activeNovel?.visibility === 'Public' ? 'Đã xuất bản.' : 'Đã chọn phiên bản xuất bản (chương vẫn ẩn vì tác phẩm đang Riêng tư).');
       renderChapterList();
       renderTimeline();
       showHistoryOffcanvas();

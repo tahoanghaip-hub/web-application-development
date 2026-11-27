@@ -64,9 +64,11 @@ with sync_playwright() as pw:
     page.locator("#login-password").fill(password)
     page.locator("button[value=login]").click()
     page.locator("#open-add-modal-btn").click()
+    expect(page.locator("#novel-visibility")).to_have_value("Private")
     page.locator("#novel-title").fill(novel_title)
     page.locator("#novel-description").fill("Tác phẩm giả lập để kiểm thử giao diện đọc và soạn thảo riêng.")
     page.locator("#novel-deadline").fill(str(date.today() + timedelta(days=3)))
+    page.locator("#novel-visibility").select_option("Public")
     page.locator("#save-novel-btn").click()
 
     # 4. Open dedicated editor page from Dashboard "Soạn thảo" link
@@ -187,6 +189,7 @@ with sync_playwright() as pw:
     guest.route("**/auth/me", lambda route: pending_session.append(route))
     guest.goto(base + "/index.html")
     guest.locator("#home-search-input").fill(name)
+    expect(guest.locator("#discover-heading")).to_have_text("Kết quả tìm kiếm")
     read_link = guest.locator("a.btn-read-novel").first
     expect(read_link).to_contain_text("Đọc truyện")
     href = read_link.get_attribute("href")

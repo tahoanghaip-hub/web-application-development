@@ -32,6 +32,7 @@
             <span class="btn-text-hide-xs">Quay lại Studio</span>
           </a>
           <span id="editor-novel-title" class="editor-novel-title">Soạn thảo tác phẩm</span>
+          <span id="editor-novel-visibility-badge" class="compact-status-pill is-draft" hidden>Riêng tư</span>
         </div>
 
         <div class="editor-navbar-right">
@@ -159,6 +160,11 @@
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                 <li>
+                  <button id="chapter-privacy-btn" class="dropdown-item" type="button">
+                    <i class="fa-solid fa-lock me-2 text-primary"></i> Quyền riêng tư
+                  </button>
+                </li>
+                <li>
                   <button id="rename-chapter" class="dropdown-item" type="button">
                     <i class="fa-solid fa-pen me-2 text-primary"></i> Đổi tên chương
                   </button>
@@ -222,6 +228,10 @@
 
             <!-- Writing Area -->
             <div id="editor-writing-area" class="editor-writing-card">
+              <div id="editor-chapter-hidden-banner" class="alert alert-warning py-2 px-3 small mb-0" hidden role="status">
+                <i class="fa-solid fa-eye-slash me-1" aria-hidden="true"></i>
+                Chương này đã chọn một phiên bản xuất bản, nhưng hiện đang bị ẩn với người đọc vì tác phẩm đang ở chế độ <strong>Riêng tư</strong>.
+              </div>
               <div class="editor-chapter-head">
                 <div class="d-flex align-items-center gap-2 flex-wrap min-w-0">
                   <h1 id="active-chapter-heading" class="h5 fw-bold mb-0 text-break">Chương</h1>
@@ -300,6 +310,9 @@
           <button id="editor-detail-open" type="button" class="btn btn-primary-novel">
             <i class="fa-solid fa-pen-nib" aria-hidden="true"></i> Mở soạn thảo
           </button>
+          <button id="editor-detail-privacy" type="button" class="btn btn-outline-novel">
+            <i class="fa-solid fa-lock" aria-hidden="true"></i> Quyền riêng tư
+          </button>
           <button id="editor-detail-rename" type="button" class="btn btn-outline-novel">
             <i class="fa-solid fa-pen" aria-hidden="true"></i> Đổi tên chương
           </button>
@@ -310,6 +323,61 @@
             <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Xóa chương
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       CHAPTER PRIVACY MODAL
+       ========================================== -->
+  <div class="modal fade modal-sheet-mobile" id="chapter-privacy-modal" tabindex="-1"
+    aria-labelledby="chapterPrivacyModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="min-w-0">
+            <div id="chapter-privacy-subtitle" class="small text-secondary fw-semibold text-truncate"></div>
+            <h5 class="modal-title fw-bold" id="chapterPrivacyModalTitle">Quyền riêng tư chương</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+        </div>
+        <form id="chapter-privacy-form">
+          <div class="modal-body p-4">
+            <div id="chapter-privacy-novel-note" class="alert alert-warning py-2 px-3 small mb-3" hidden></div>
+
+            <div class="mb-3">
+              <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="chapter-visibility" id="chap-vis-private" value="Private">
+                <label class="form-check-label" for="chap-vis-private">
+                  <strong>Riêng tư</strong> — Ẩn chương khỏi người đọc nhưng giữ nguyên lịch sử phiên bản.
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="chapter-visibility" id="chap-vis-public" value="Public">
+                <label class="form-check-label" for="chap-vis-public">
+                  <strong>Công khai</strong> — Chọn một phiên bản đã lưu để xuất bản.
+                </label>
+              </div>
+            </div>
+
+            <div id="chapter-privacy-no-versions" class="alert alert-info py-2 px-3 small mb-0" hidden>
+              Chương này chưa có phiên bản nào được lưu. Hãy nhập nội dung bản thảo và bấm <strong>Lưu phiên bản</strong> trước khi chọn Công khai.
+            </div>
+
+            <div id="chapter-privacy-versions-wrap" hidden>
+              <div class="small fw-semibold text-secondary mb-2">Chọn phiên bản để công khai:</div>
+              <div id="chapter-privacy-versions-list" class="d-flex flex-column gap-2 mb-2" style="max-height: 260px; overflow-y: auto;"></div>
+              <p class="small text-secondary mb-0">
+                <i class="fa-solid fa-circle-info me-1"></i>
+                Lưu bản nháp mới hoặc khôi phục bản cũ sẽ chỉ tạo phiên bản nháp riêng tư, không tự động thay đổi bản đang công khai.
+              </p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-novel" data-bs-dismiss="modal">Hủy</button>
+            <button type="submit" id="chapter-privacy-save-btn" class="btn btn-primary-novel">Áp dụng</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
