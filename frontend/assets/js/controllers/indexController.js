@@ -23,7 +23,7 @@ export function initIndexController() {
  * Nạp danh sách tác phẩm và hiển thị lên lưới
  */
 async function loadNovels() {
-  currentNovelsList = await api('/studio/public');
+  currentNovelsList = await api('/studio/public/novels');
   renderNovelsGrid(currentNovelsList);
 }
 
@@ -72,7 +72,7 @@ function renderNovelsGrid(novels) {
     const statusIcon = isDone ? 'fa-circle-check' : 'fa-clock';
 
     // Đếm số chương
-    const chaptersCount = Array.isArray(novel.chapters) ? novel.chapters.length : 0;
+    const chaptersCount = novel.chapterCount ?? (Array.isArray(novel.chapters) ? novel.chapters.length : 0);
 
     return `
       <div class="col-md-6 col-lg-4 animate-fade-in">

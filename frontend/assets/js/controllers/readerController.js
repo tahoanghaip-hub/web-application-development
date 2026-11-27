@@ -6,10 +6,10 @@
 import { $, api, notify, on, report } from '../core/api.js';
 import { escapeHtml } from '../app.js';
 
-let publicNovels = [];
 let activeNovel = null;
 let activeChapterId = null;
 let detailChapterId = null;
+let chapterLoadSeq = 0;
 
 function readerUrl(novelId, chapterId = '') {
   const params = new URLSearchParams();
@@ -131,7 +131,65 @@ function renderNovelMeta() {
   `;
 }
 
-function renderFromUrl({ replaceIfDefault = true } = {}) {
+function renderChapterContent(chapterMeta, chapterData, chapterIndex) {
+  activeChapterId = chapterMeta.chapterId;
+  $('reader-chapter-unavailable').hidden = true;
+  $('reader-article').hidden = false;
+
+  $('reader-chapter-title').textContent = chapterData?.chapterTitle || chapterMeta.chapterTitle;
+  const ts = chapterData?.timestamp || chapterMeta.timestamp;
+  const formattedTime = ts ? new Date(ts).toLocaleString('vi-VN') : 'Chưa rõ';
+  $('reader-version-info').innerHTML = `
+    <i class="fa-solid fa-code-commit text-primary me-1" aria-hidden="true"></i>
+    Bản tác giả đã xuất bản (${escapeHtml(formattedTime)})
+  `;
+  $('reader-content-body').textContent = chapterData?.content || '(Nội dung bản thảo rỗng)';
+
+  renderToc(activeNovel.chapters, activeChapterId);
+  updatePrevNext(activeNovel.chapters, chapterIndex);
+  document.title = `${chapterData?.chapterTitle || chapterMeta.chapterTitle} — ${activeNovel.title} | NOVELSTUDIO`;
+}
+
+function renderChapterUnavailable() {
+  const chapters = activeNovel.chapters;
+  activeChapterId = null;
+  $('reader-article').hidden = true;
+  $('reader-chapter-unavailable').hidden = false;
+  const firstHref = readerUrl(activeNovel.id, chapters[0].chapterId);
+  const firstBtn = $('reader-open-first-chapter');
+  firstBtn.href = firstHref;
+  firstBtn.dataset.chapterId = chapters[0].chapterId;
+  renderToc(chapters, null);
+  document.title = `${activeNovel.title} — Chương không khả dụng | NOVELSTUDIO`;
+}
+
+async function fetchAndRenderChapter(chapterId) {
+  if (!activeNovel) return;
+  const chapters = activeNovel.chapters || [];
+  const chapterIndex = chapters.findIndex(c => String(c.chapterId) === String(chapterId));
+  if (chapterIndex === -1) {
+    renderChapterUnavailable();
+    return;
+  }
+
+  const seq = ++chapterLoadSeq;
+  try {
+    const chapterData = await api(
+      '/studio/public/novels/' + encodeURIComponent(activeNovel.id) + '/chapters/' + encodeURIComponent(chapterId)
+    );
+    if (seq !== chapterLoadSeq) return;
+    renderChapterContent(chapters[chapterIndex], chapterData, chapterIndex);
+  } catch (error) {
+    if (seq !== chapterLoadSeq) return;
+    if (error.status === 404) {
+      renderChapterUnavailable();
+      return;
+    }
+    report(error);
+  }
+}
+
+async function loadPublicNovel({ replaceIfDefault = true } = {}) {
   const params = new URLSearchParams(location.search);
   const novelId = params.get('novel') || '';
   const requestedChapter = params.get('chapter') || '';
@@ -141,7 +199,34 @@ function renderFromUrl({ replaceIfDefault = true } = {}) {
     return;
   }
 
-  activeNovel = publicNovels.find(book => String(book.id) === String(novelId)) || null;
+  $('reader-loading').hidden = false;
+  $('reader-error').hidden = true;
+  $('reader-shell').hidden = true;
+
+  const query = new URLSearchParams();
+  if (requestedChapter) {
+    query.set('chapter', requestedChapter);
+  } else {
+    query.set('includeDefault', '1');
+  }
+
+  let data;
+  try {
+    data = await api('/studio/public/novels/' + encodeURIComponent(novelId) + '?' + query.toString());
+  } catch (error) {
+    if (error.status === 404) {
+      showLoadError(
+        'Tác phẩm không tồn tại hoặc chưa công khai',
+        'Tác phẩm này chưa có chương nào được xuất bản công khai hoặc không còn khả dụng.'
+      );
+      return;
+    }
+    showLoadError('Chưa tải được nội dung truyện', 'Không thể kết nối tới thư viện công khai. Vui lòng thử lại.', true);
+    report(error);
+    return;
+  }
+
+  activeNovel = data;
   if (!activeNovel || !Array.isArray(activeNovel.chapters) || activeNovel.chapters.length === 0) {
     showLoadError(
       'Tác phẩm không tồn tại hoặc chưa công khai',
@@ -156,50 +241,26 @@ function renderFromUrl({ replaceIfDefault = true } = {}) {
   renderNovelMeta();
 
   const chapters = activeNovel.chapters;
-  let chapterIndex = -1;
-
   if (!requestedChapter) {
-    chapterIndex = 0;
     const firstId = chapters[0].chapterId;
     if (replaceIfDefault) {
       history.replaceState({ novelId: activeNovel.id, chapterId: firstId }, '', readerUrl(activeNovel.id, firstId));
     }
-  } else {
-    chapterIndex = chapters.findIndex(c => String(c.chapterId) === String(requestedChapter));
-  }
-
-  if (chapterIndex === -1) {
-    activeChapterId = null;
-    $('reader-article').hidden = true;
-    $('reader-chapter-unavailable').hidden = false;
-    const firstHref = readerUrl(activeNovel.id, chapters[0].chapterId);
-    const firstBtn = $('reader-open-first-chapter');
-    firstBtn.href = firstHref;
-    firstBtn.dataset.chapterId = chapters[0].chapterId;
-    renderToc(chapters, null);
-    document.title = `${activeNovel.title} — Chương không khả dụng | NOVELSTUDIO`;
+    if (activeNovel.activeChapter) {
+      renderChapterContent(chapters[0], activeNovel.activeChapter, 0);
+    } else {
+      await fetchAndRenderChapter(firstId);
+    }
     return;
   }
 
-  const chapter = chapters[chapterIndex];
-  activeChapterId = chapter.chapterId;
-  $('reader-chapter-unavailable').hidden = true;
-  $('reader-article').hidden = false;
+  const chapterIndex = chapters.findIndex(c => String(c.chapterId) === String(requestedChapter));
+  if (chapterIndex === -1 || !activeNovel.activeChapter) {
+    renderChapterUnavailable();
+    return;
+  }
 
-  $('reader-chapter-title').textContent = chapter.chapterTitle;
-  const latestVersion = Array.isArray(chapter.versions) ? chapter.versions[0] : null;
-  const formattedTime = latestVersion?.timestamp
-    ? new Date(latestVersion.timestamp).toLocaleString('vi-VN')
-    : 'Chưa rõ';
-  $('reader-version-info').innerHTML = `
-    <i class="fa-solid fa-code-commit text-primary me-1" aria-hidden="true"></i>
-    Bản tác giả đã xuất bản (${escapeHtml(formattedTime)})
-  `;
-  $('reader-content-body').textContent = latestVersion?.content || '(Nội dung bản thảo rỗng)';
-
-  renderToc(chapters, activeChapterId);
-  updatePrevNext(chapters, chapterIndex);
-  document.title = `${chapter.chapterTitle} — ${activeNovel.title} | NOVELSTUDIO`;
+  renderChapterContent(chapters[chapterIndex], activeNovel.activeChapter, chapterIndex);
 }
 
 function navigateToChapter(chapterId) {
@@ -210,9 +271,9 @@ function navigateToChapter(chapterId) {
   }
   const url = readerUrl(activeNovel.id, chapterId);
   history.pushState({ novelId: activeNovel.id, chapterId }, '', url);
-  renderFromUrl({ replaceIfDefault: false });
   closeMobileToc();
   window.scrollTo({ top: 0, behavior: 'auto' });
+  fetchAndRenderChapter(chapterId);
 }
 
 function openChapterDetailModal(chapterId) {
@@ -222,16 +283,22 @@ function openChapterDetailModal(chapterId) {
 
   const chapter = activeNovel.chapters[index];
   const latest = Array.isArray(chapter.versions) ? chapter.versions[0] : null;
-  const content = latest?.content || '';
-  const words = content.trim() ? content.trim().split(/\s+/).length : 0;
+  const ts = chapter.timestamp || latest?.timestamp;
+  let words = chapter.wordCount;
+  let chars = chapter.charCount;
+  if (words === undefined || chars === undefined) {
+    const content = latest?.content || '';
+    words = content.trim() ? content.trim().split(/\s+/).length : 0;
+    chars = content.length;
+  }
 
   detailChapterId = chapter.chapterId;
   $('detail-chapter-num').textContent = `Chương ${index + 1} / ${activeNovel.chapters.length}`;
   $('chapterDetailTitle').textContent = chapter.chapterTitle;
-  $('detail-chapter-time').textContent = latest?.timestamp
-    ? new Date(latest.timestamp).toLocaleString('vi-VN')
+  $('detail-chapter-time').textContent = ts
+    ? new Date(ts).toLocaleString('vi-VN')
     : 'Chưa rõ';
-  $('detail-chapter-length').textContent = `${words} từ · ${content.length} ký tự`;
+  $('detail-chapter-length').textContent = `${words} từ · ${chars} ký tự`;
 
   const readBtn = $('detail-chapter-read');
   readBtn.href = readerUrl(activeNovel.id, chapter.chapterId);
@@ -241,19 +308,6 @@ function openChapterDetailModal(chapterId) {
   const modalEl = $('chapter-detail-modal');
   if (modalEl && window.bootstrap) {
     bootstrap.Modal.getOrCreateInstance(modalEl).show();
-  }
-}
-
-async function loadPublicData() {
-  $('reader-loading').hidden = false;
-  $('reader-error').hidden = true;
-  $('reader-shell').hidden = true;
-  try {
-    publicNovels = await api('/studio/public');
-    renderFromUrl({ replaceIfDefault: true });
-  } catch (error) {
-    showLoadError('Chưa tải được nội dung truyện', 'Không thể kết nối tới thư viện công khai. Vui lòng thử lại.', true);
-    report(error);
   }
 }
 
@@ -267,7 +321,7 @@ function handleInternalChapterClick(event, linkEl) {
 }
 
 function bindEvents() {
-  on($('reader-retry-btn'), 'click', loadPublicData);
+  on($('reader-retry-btn'), 'click', () => loadPublicNovel({ replaceIfDefault: true }));
 
   const toggleBtn = $('reader-toc-toggle');
   on(toggleBtn, 'click', () => {
@@ -339,15 +393,20 @@ function bindEvents() {
   });
 
   window.addEventListener('popstate', () => {
-    if (publicNovels.length) {
-      renderFromUrl({ replaceIfDefault: false });
+    const params = new URLSearchParams(location.search);
+    const novelId = params.get('novel') || '';
+    const requestedChapter = params.get('chapter') || '';
+    if (!activeNovel || String(novelId) !== String(activeNovel.id)) {
+      loadPublicNovel({ replaceIfDefault: false });
+      return;
     }
+    fetchAndRenderChapter(requestedChapter || activeNovel.chapters?.[0]?.chapterId || '');
   });
 }
 
 function initReaderController() {
   bindEvents();
-  loadPublicData();
+  loadPublicNovel({ replaceIfDefault: true });
 }
 
 if (document.readyState === 'loading') {

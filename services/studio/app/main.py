@@ -7,7 +7,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from sqlalchemy import delete, func, insert, or_, select, update
+from sqlalchemy import case, delete, func, insert, or_, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import DataError, OperationalError
 from sqlalchemy.orm import Session
@@ -90,13 +90,124 @@ def public_library(db: DB):
                    versions.c.content, versions.c.timestamp).where(versions.c.published).order_by(
                        versions.c.published_at.desc(), versions.c.id.desc())
     for snapshot, cid, vid, content, timestamp in db.execute(query):
-        chapter_title = snapshot.pop("chapterTitle")
-        book = books.setdefault(snapshot["id"], {**snapshot, "chapters": []})
+        meta = dict(snapshot)
+        chapter_title = meta.pop("chapterTitle")
+        book = books.setdefault(meta["id"], {**meta, "chapters": []})
         book["chapters"].append({"chapterId": str(cid), "chapterTitle": chapter_title,
                                  "versions": [{"versionId": str(vid), "content": content, "timestamp": timestamp}]})
     for book in books.values():
         book["chapters"].sort(key=lambda c: int(c["chapterId"]))
     return list(books.values())
+
+
+@api.get("/public/novels")
+def public_novels(db: DB):
+    books = {}
+    seen_chapters = {}
+    query = select(versions.c.public_metadata, versions.c.chapter_id).where(
+        versions.c.published.is_(True)
+    ).order_by(versions.c.published_at.desc(), versions.c.id.desc())
+    for snapshot, cid in db.execute(query):
+        meta = dict(snapshot)
+        meta.pop("chapterTitle", None)
+        nid = meta["id"]
+        if nid not in books:
+            books[nid] = {**meta, "chapterCount": 0}
+            seen_chapters[nid] = set()
+        if cid not in seen_chapters[nid]:
+            seen_chapters[nid].add(cid)
+            books[nid]["chapterCount"] += 1
+    return list(books.values())
+
+
+@api.get("/public/novels/{nid}")
+def public_novel_detail(nid: str, db: DB, chapter: str | None = None, includeDefault: bool = False):
+    char_count_expr = func.char_length(versions.c.content).label("char_count")
+    word_count_expr = case(
+        (func.btrim(versions.c.content) == "", 0),
+        else_=func.cardinality(func.regexp_split_to_array(func.btrim(versions.c.content), r"\s+")),
+    ).label("word_count")
+    query = select(
+        versions.c.public_metadata,
+        versions.c.chapter_id,
+        versions.c.id,
+        versions.c.timestamp,
+        char_count_expr,
+        word_count_expr,
+    ).select_from(
+        versions.join(chapters, versions.c.chapter_id == chapters.c.id)
+    ).where(
+        chapters.c.novel_id == nid,
+        versions.c.published.is_(True),
+    ).order_by(versions.c.published_at.desc(), versions.c.id.desc())
+    rows = db.execute(query).all()
+    if not rows:
+        raise HTTPException(404, "Không tìm thấy tác phẩm công khai.")
+
+    first_meta = dict(rows[0][0])
+    first_meta.pop("chapterTitle", None)
+    book = {**first_meta, "chapters": []}
+    for snapshot, cid, vid, timestamp, char_count, word_count in rows:
+        book["chapters"].append({
+            "chapterId": str(cid),
+            "chapterTitle": snapshot["chapterTitle"],
+            "versionId": str(vid),
+            "timestamp": timestamp,
+            "wordCount": int(word_count or 0),
+            "charCount": int(char_count or 0),
+        })
+    book["chapters"].sort(key=lambda c: int(c["chapterId"]))
+
+    if chapter is not None or includeDefault:
+        if chapter is not None:
+            target = next((c for c in book["chapters"] if c["chapterId"] == chapter), None)
+        else:
+            target = book["chapters"][0] if book["chapters"] else None
+        if target is None:
+            book["activeChapter"] = None
+        else:
+            content = db.scalar(
+                select(versions.c.content).where(
+                    versions.c.id == int(target["versionId"]),
+                    versions.c.published.is_(True),
+                )
+            )
+            book["activeChapter"] = {
+                "chapterId": target["chapterId"],
+                "chapterTitle": target["chapterTitle"],
+                "versionId": target["versionId"],
+                "timestamp": target["timestamp"],
+                "content": content,
+            }
+    return book
+
+
+@api.get("/public/novels/{nid}/chapters/{cid}")
+def public_chapter_detail(nid: str, cid: int, db: DB):
+    row = db.execute(
+        select(
+            versions.c.id,
+            versions.c.chapter_id,
+            versions.c.public_metadata,
+            versions.c.content,
+            versions.c.timestamp,
+        ).select_from(
+            versions.join(chapters, versions.c.chapter_id == chapters.c.id)
+        ).where(
+            chapters.c.novel_id == nid,
+            versions.c.chapter_id == cid,
+            versions.c.published.is_(True),
+        )
+    ).mappings().first()
+    if not row:
+        raise HTTPException(404, "Không tìm thấy chương công khai.")
+    return {
+        "chapterId": str(row["chapter_id"]),
+        "chapterTitle": row["public_metadata"]["chapterTitle"],
+        "versionId": str(row["id"]),
+        "timestamp": row["timestamp"],
+        "content": row["content"],
+    }
 
 
 @api.get("/novels")
